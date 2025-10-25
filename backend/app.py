@@ -1,7 +1,9 @@
-from flask import Flask, jsonify, request
-from flask_cors import CORS
 import os
 import sys
+
+from flask import Flask, jsonify
+from flask_cors import CORS
+from utils.screenshot_analyze import analyze_screenshot
 
 # Add the backend directory to Python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -14,6 +16,15 @@ from routes import api_routes
 
 # Register blueprints
 app.register_blueprint(api_routes.bp)
+
+@app.route('/screenshot', methods=['POST'])
+def screenshot():
+    analyze_screenshot(None)
+
+    return jsonify({
+        "message": "This endpoint is deprecated. Please use /api/analyze-screenshot instead.",
+        "status": "success"
+    })
 
 @app.route('/')
 def index():
