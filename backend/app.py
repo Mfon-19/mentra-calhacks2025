@@ -1,5 +1,6 @@
 import os
 import sys
+import base64
 
 from flask import Flask, jsonify
 from flask_cors import CORS
@@ -19,11 +20,18 @@ app.register_blueprint(api_routes.bp)
 
 @app.route('/screenshot', methods=['POST'])
 def screenshot():
-    analyze_screenshot(None)
+    # FOR TESTING
+    img_path = os.path.join(os.path.dirname(__file__), 'utils', 'img.png')
+    with open(img_path, 'rb') as img_file:
+        img_data = img_file.read()
+        base64_image = base64.b64encode(img_data).decode('utf-8')
+
+    result = analyze_screenshot(base64_image)
 
     return jsonify({
-        "message": "This endpoint is deprecated. Please use /api/analyze-screenshot instead.",
-        "status": "success"
+        "message": "Screenshot analyzed successfully",
+        "status": "success",
+        "analysis": result
     })
 
 @app.route('/')

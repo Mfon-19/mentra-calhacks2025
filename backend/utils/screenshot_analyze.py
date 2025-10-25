@@ -1,3 +1,4 @@
+import base64
 import os
 
 from dotenv import load_dotenv
@@ -10,18 +11,26 @@ client = Groq(
     api_key=os.getenv("GROQ_API_KEY"),
 )
 
-def analyze_screenshot(screenshot):
+def analyze_screenshot(base64_image: str):
     chat_completion = client.chat.completions.create(
         messages=[
             {
                 "role": "user",
-                "content": "Explain the importance of fast language models",
+                "content": [
+                    {"type": "text", "text": "Analyze this screenshot"},
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/png;base64,{base64_image}"
+                        }
+                    }
+                ]
             }
         ],
-        model="llama-3.3-70b-versatile",
+        model="meta-llama/llama-4-scout-17b-16e-instruct",
     )
 
-    print(chat_completion.choices[0].message.content)
+    return chat_completion.choices[0].message.content
 
 
 
