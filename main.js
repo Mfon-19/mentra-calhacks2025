@@ -1,9 +1,68 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, globalShortcut } = require('electron');
 const path = require('path');
+const { spawn } = require('child_process');
 const BackendManager = require('./scripts/start-backend');
 
 let mainWindow;
 let backendManager;
+
+// Overlay screen function triggered by '/' key - creates a new Electron window
+function triggerOverlayScreen() {
+  console.log('Overlay screen triggered by "/" key press - creating new window');
+  
+  // Create a new overlay window - independent from main window
+  const overlayWindow = new BrowserWindow({
+    width: 600,
+    height: 400,
+    minWidth: 400,
+    minHeight: 300,
+    // Remove parent property to make it independent
+    // parent: mainWindow, // Removed - now independent
+    // modal: false, // Not needed for independent window
+    alwaysOnTop: true, // Keep it above other windows
+    frame: true, // Keep frame for now, can be set to false for frameless
+    // transparent: true, // Uncomment for transparent effect
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js'),
+      webSecurity: false
+    },
+    title: 'Overlay Screen',
+    show: false, // Don't show until ready
+    x: 100, // Position on desktop
+    y: 100
+  });
+
+  // Load content for the overlay window
+  const isDev = process.env.NODE_ENV === 'development';
+  
+  if (isDev) {
+    // In development, load from React dev server with a different route
+    overlayWindow.loadURL('http://localhost:3001');
+  } else {
+    // In production, load the built React app
+    overlayWindow.loadFile(path.join(__dirname, 'overlay-screen/build/index.html'));
+  }
+
+  // Show window when ready
+  overlayWindow.once('ready-to-show', () => {
+    overlayWindow.show();
+    console.log('Overlay window opened');
+  });
+
+  // Handle overlay window closed
+  overlayWindow.on('closed', () => {
+    console.log('Overlay window closed');
+  });
+
+  // Send message to main window that overlay was created
+  if (mainWindow) {
+    mainWindow.webContents.send('child-process-output', 'Overlay window created');
+  }
+
+  return overlayWindow;
+}
 
 function createWindow() {
   // Create the browser window
@@ -63,6 +122,16 @@ function createWindow() {
 app.whenReady().then(() => {
   createWindow();
 
+  // Register global shortcut for '/' key
+  const ret = globalShortcut.register('/', () => {
+    console.log('Global shortcut "/" pressed');
+    triggerOverlayScreen();
+  });
+
+  if (!ret) {
+    console.log('Registration of global shortcut "/" failed');
+  }
+
   app.on('activate', () => {
     // On macOS, re-create window when dock icon is clicked
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -77,6 +146,9 @@ app.on('window-all-closed', () => {
   if (backendManager) {
     backendManager.stop();
   }
+  
+  // Unregister all global shortcuts
+  globalShortcut.unregisterAll();
   
   // On macOS, keep app running even when all windows are closed
   if (process.platform !== 'darwin') {
@@ -103,6 +175,17 @@ ipcMain.handle('restart-backend', () => {
     return { success: true };
   }
   return { success: false };
+});
+
+// IPC handler to trigger overlay screen from renderer
+ipcMain.handle('trigger-child-process', () => {
+  try {
+    const process = triggerOverlayScreen();
+    return { success: true, pid: process.pid };
+  } catch (error) {
+    console.error('Error triggering overlay screen:', error);
+    return { success: false, error: error.message };
+  }
 });
 
 // Handle app activation (macOS)
