@@ -10,6 +10,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Child process management
   triggerChildProcess: () => ipcRenderer.invoke('trigger-child-process'),
   
+  // Screenshot functionality
+  takeScreenshot: () => ipcRenderer.invoke('take-screenshot'),
+  
   // Listen for child process output
   onChildProcessOutput: (callback) => {
     ipcRenderer.on('child-process-output', (event, data) => callback(data));

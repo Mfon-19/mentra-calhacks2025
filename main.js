@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, globalShortcut } = require('electron');
+const { app, BrowserWindow, ipcMain, globalShortcut, desktopCapturer, screen } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 const BackendManager = require('./scripts/start-backend');
@@ -214,6 +214,43 @@ ipcMain.handle('trigger-child-process', () => {
     };
   } catch (error) {
     console.error('Error triggering overlay screen:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// IPC handler for taking screenshots
+ipcMain.handle('take-screenshot', async () => {
+  try {
+    const sources = await desktopCapturer.getSources({
+      types: ['screen'],
+      thumbnailSize: { width: 1920, height: 1080 }
+    });
+
+    if (sources.length === 0) {
+      throw new Error('No screen sources available');
+    }
+
+    // Get the primary display
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const source = sources.find(source => 
+      source.name === 'Entire Screen' || source.name === 'Screen 1'
+    ) || sources[0];
+
+    // Convert to base64
+    const screenshot = source.thumbnail.toPNG();
+    const base64Image = screenshot.toString('base64');
+
+    return {
+      success: true,
+      data: base64Image,
+      size: screenshot.length,
+      display: {
+        width: primaryDisplay.bounds.width,
+        height: primaryDisplay.bounds.height
+      }
+    };
+  } catch (error) {
+    console.error('Error taking screenshot:', error);
     return { success: false, error: error.message };
   }
 });
