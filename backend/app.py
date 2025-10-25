@@ -14,9 +14,13 @@ CORS(app)  # Allow React to make requests
 
 # Import routes
 from routes import api_routes
+from routes.lesson_plans import lesson_plans_bp
+from routes.media_routes import media_bp
 
 # Register blueprints
 app.register_blueprint(api_routes.bp)
+app.register_blueprint(lesson_plans_bp, url_prefix='/api')
+app.register_blueprint(media_bp, url_prefix='/api')
 
 @app.route('/screenshot', methods=['POST'])
 def screenshot():

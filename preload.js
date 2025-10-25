@@ -7,6 +7,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getBackendStatus: () => ipcRenderer.invoke('get-backend-status'),
   restartBackend: () => ipcRenderer.invoke('restart-backend'),
   
+  // Child process management
+  triggerChildProcess: () => ipcRenderer.invoke('trigger-child-process'),
+  
+  // Listen for child process output
+  onChildProcessOutput: (callback) => {
+    ipcRenderer.on('child-process-output', (event, data) => callback(data));
+  },
+  
   // Platform information
   platform: process.platform,
   
