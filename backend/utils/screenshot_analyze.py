@@ -1,42 +1,50 @@
-import os
+import base64
+from datetime import datetime
 
-from dotenv import load_dotenv
-from groq import Groq
+# TODO: Implement LLM integration (OpenAI/Groq/Anthropic) for actual screenshot analysis
+# This would require adding the appropriate API key and model integration
 
-load_dotenv()
-
-
-client = Groq(
-    api_key=os.getenv("GROQ_API_KEY"),
-)
-
-SYSTEM_PROMPT = "You are a helpful AI assistant that analyzes screenshots and provides detailed, accurate descriptions of what you see. Focus on identifying UI elements, text content, layout, and any notable features or issues in the image."
 def analyze_screenshot(base64_image: str):
-    prompt = SYSTEM_PROMPT + get_step_context()
-
-    chat_completion = client.chat.completions.create(
-        messages=[
-            {
-                "role": "system",
-                "content": SYSTEM_PROMPT
+    """
+    Analyze a screenshot and return analysis results.
+    
+    Args:
+        base64_image (str): Base64 encoded PNG image data
+        
+    Returns:
+        dict: Analysis results with metadata and basic information
+    """
+    try:
+        # Decode the base64 image to get basic information
+        image_data = base64.b64decode(base64_image)
+        image_size = len(image_data)
+        
+        # Basic analysis without LLM (for testing purposes)
+        analysis_result = {
+            "timestamp": datetime.now().isoformat(),
+            "image_size_bytes": image_size,
+            "image_size_mb": round(image_size / (1024 * 1024), 2),
+            "format": "PNG",
+            "analysis_type": "basic_metadata",
+            "status": "success",
+            "message": "Screenshot received and processed successfully",
+            "basic_info": {
+                "received_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "data_length": len(base64_image),
+                "is_valid_base64": True
             },
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": "Analyze this screenshot"},
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/png;base64,{base64_image}"
-                        }
-                    }
-                ]
-            }
-        ],
-        model="meta-llama/llama-4-scout-17b-16e-instruct",
-    )
-
-    return chat_completion.choices[0].message.content
+            "todo": "Integrate with LLM (Groq/OpenAI) for actual content analysis"
+        }
+        
+        return analysis_result
+        
+    except Exception as e:
+        return {
+            "timestamp": datetime.now().isoformat(),
+            "status": "error",
+            "message": f"Error processing screenshot: {str(e)}",
+            "analysis_type": "error"
+        }
 
 def get_step_context() -> str:
     return ""
