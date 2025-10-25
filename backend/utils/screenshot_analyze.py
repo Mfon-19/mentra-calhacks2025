@@ -47,3 +47,7 @@ def update_step_state(cur_state_index: int):
     # check if it is already final state
 
     return None
+
+
+def generate_popup() -> None:
+    return None
