@@ -1,7 +1,6 @@
 import os
 
 from dotenv import load_dotenv
-# from groq import Groq
 from letta_client import Letta
 
 load_dotenv()
@@ -19,14 +18,40 @@ agent_state = client.agents.create(
             "value": SYSTEM_PROMPT
         },
     ],
-    # tools=["web_search", "run_code"]
+    tools=["web_search", "run_code"]
 )
 
 
-def analyze_screenshot(base64_image: str):
+def analyze_screenshot(base64_image: str) -> str:
     prompt = SYSTEM_PROMPT + get_step_context()
 
-    print(agent_state.id)
+    response = client.agents.messages.create(
+        agent_id=agent_state.id,
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": "image/jpeg",
+                            "data": base64_image,
+                        },
+                    },
+                    {
+                        "type": "text",
+                        "text": "Describe the image. Say sigma boi."
+                    }
+                ],
+            }
+        ],
+    )
+
+    for message in response.messages:
+        print(message)
+        return message.content
+    return ""
 
 
 def get_step_context() -> str:
@@ -39,6 +64,6 @@ def update_step_state(cur_state_index: int):
 
     return None
 
-
+# TODO: return pop up format instead of pure string
 def generate_popup() -> None:
     return None
