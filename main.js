@@ -5,13 +5,22 @@ const BackendManager = require('./scripts/start-backend');
 
 let mainWindow;
 let backendManager;
+let overlayWindow = null; // Track the overlay window
 
 // Overlay screen function triggered by '/' key - creates a new Electron window
 function triggerOverlayScreen() {
+  // Check if overlay window already exists
+  if (overlayWindow && !overlayWindow.isDestroyed()) {
+    console.log('Overlay window already exists - closing it');
+    overlayWindow.close();
+    overlayWindow = null;
+    return null;
+  }
+
   console.log('Overlay screen triggered by "/" key press - creating new window');
   
   // Create a new overlay window - independent from main window
-  const overlayWindow = new BrowserWindow({
+  overlayWindow = new BrowserWindow({
     width: 600,
     height: 400,
     minWidth: 400,
@@ -54,6 +63,7 @@ function triggerOverlayScreen() {
   // Handle overlay window closed
   overlayWindow.on('closed', () => {
     console.log('Overlay window closed');
+    overlayWindow = null; // Reset the reference when closed
   });
 
   // Send message to main window that overlay was created
@@ -123,6 +133,7 @@ app.whenReady().then(() => {
   createWindow();
 
   // Register global shortcut for '/' key
+  // Toggle behavior: creates overlay if none exists, closes it if it exists
   const ret = globalShortcut.register('/', () => {
     console.log('Global shortcut "/" pressed');
     triggerOverlayScreen();
@@ -147,12 +158,27 @@ app.on('window-all-closed', () => {
     backendManager.stop();
   }
   
+  // Close overlay window if it exists
+  if (overlayWindow && !overlayWindow.isDestroyed()) {
+    overlayWindow.close();
+    overlayWindow = null;
+  }
+  
   // Unregister all global shortcuts
   globalShortcut.unregisterAll();
   
   // On macOS, keep app running even when all windows are closed
   if (process.platform !== 'darwin') {
     app.quit();
+  }
+});
+
+// Handle app before quit to ensure proper cleanup
+app.on('before-quit', () => {
+  // Close overlay window if it exists
+  if (overlayWindow && !overlayWindow.isDestroyed()) {
+    overlayWindow.close();
+    overlayWindow = null;
   }
 });
 
@@ -181,7 +207,11 @@ ipcMain.handle('restart-backend', () => {
 ipcMain.handle('trigger-child-process', () => {
   try {
     const process = triggerOverlayScreen();
-    return { success: true, pid: process.pid };
+    return { 
+      success: true, 
+      pid: process ? process.pid : null,
+      action: overlayWindow ? 'opened' : 'closed'
+    };
   } catch (error) {
     console.error('Error triggering overlay screen:', error);
     return { success: false, error: error.message };
