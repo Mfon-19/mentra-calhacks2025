@@ -112,3 +112,11 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# SSL Certificates
+*.crt
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
