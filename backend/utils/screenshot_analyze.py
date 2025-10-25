@@ -1,4 +1,3 @@
-import base64
 import os
 
 from dotenv import load_dotenv
@@ -11,9 +10,14 @@ client = Groq(
     api_key=os.getenv("GROQ_API_KEY"),
 )
 
+SYSTEM_PROMPT = "You are a helpful AI assistant that analyzes screenshots and provides detailed, accurate descriptions of what you see. Focus on identifying UI elements, text content, layout, and any notable features or issues in the image."
 def analyze_screenshot(base64_image: str):
     chat_completion = client.chat.completions.create(
         messages=[
+            {
+                "role": "system",
+                "content": SYSTEM_PROMPT
+            },
             {
                 "role": "user",
                 "content": [
@@ -31,6 +35,3 @@ def analyze_screenshot(base64_image: str):
     )
 
     return chat_completion.choices[0].message.content
-
-
-
