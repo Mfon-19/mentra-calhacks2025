@@ -1,9 +1,14 @@
 import json
+import os
+
 import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Supabase credentials
-SUPABASE_URL = "https://nynhpfozeopaaqkczcqs.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55bmhwZm96ZW9wYWFxa2N6Y3FzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNTAxNTQsImV4cCI6MjA3NjkyNjE1NH0.Cn9Ke-dEiTVxQryfqI3MeuLruKUpV8bgjK-p3w7fKIE"
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_KEY = os.getenv('SUPABASE_KEY')
 
 headers = {
     'apikey': SUPABASE_KEY,

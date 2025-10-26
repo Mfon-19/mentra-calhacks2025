@@ -125,3 +125,4 @@ yarn.lock
 pnpm-lock.yaml
 /.history
 package-lock.json
+frontend/package-lock.json
