@@ -112,6 +112,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+/.history
+
 
 # SSL Certificates
 *.crt
@@ -120,3 +122,5 @@ venv.bak/
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
+/.history
+package-lock.json

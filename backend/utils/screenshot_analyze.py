@@ -1,61 +1,70 @@
-import base64
-from datetime import datetime
+import os
 
-# TODO: Implement LLM integration (OpenAI/Groq/Anthropic) for actual screenshot analysis
-# This would require adding the appropriate API key and model integration
+from dotenv import load_dotenv
+from letta_client import Letta
 
-def analyze_screenshot(base64_image: str):
-    """
-    Analyze a screenshot and return analysis results.
-    
-    Args:
-        base64_image (str): Base64 encoded PNG image data
-        
-    Returns:
-        dict: Analysis results with metadata and basic information
-    """
-    try:
-        # Decode the base64 image to get basic information
-        image_data = base64.b64decode(base64_image)
-        image_size = len(image_data)
-        
-        # Basic analysis without LLM (for testing purposes)
-        analysis_result = {
-            "timestamp": datetime.now().isoformat(),
-            "image_size_bytes": image_size,
-            "image_size_mb": round(image_size / (1024 * 1024), 2),
-            "format": "PNG",
-            "analysis_type": "basic_metadata",
-            "status": "success",
-            "message": "Screenshot received and processed successfully",
-            "basic_info": {
-                "received_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "data_length": len(base64_image),
-                "is_valid_base64": True
-            },
-            "todo": "Integrate with LLM (Groq/OpenAI) for actual content analysis"
-        }
-        
-        return analysis_result
-        
-    except Exception as e:
-        return {
-            "timestamp": datetime.now().isoformat(),
-            "status": "error",
-            "message": f"Error processing screenshot: {str(e)}",
-            "analysis_type": "error"
-        }
+load_dotenv()
+
+client = Letta(token=os.getenv("LETTA_API_KEY"))
+
+SYSTEM_PROMPT = "I am a helpful AI assistant that analyzes screenshots and provides detailed, accurate descriptions of what you see. Focus on identifying UI elements, text content, layout, and any notable features or issues in the image."
+
+agent_state = client.agents.create(
+    # model="anthropic/claude-3-5-haiku",
+    model="openai/gpt-4.1",
+    embedding="openai/text-embedding-3-small",
+    memory_blocks=[
+        {
+            "label": "persona",
+            "value": SYSTEM_PROMPT
+        },
+    ],
+    tools=["web_search", "run_code"]
+)
+
+
+def analyze_screenshot(base64_image: str) -> str:
+    prompt = SYSTEM_PROMPT + get_step_context()
+
+    response = client.agents.messages.create(
+        agent_id=agent_state.id,
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": "image/jpeg",
+                            "data": base64_image,
+                        },
+                    },
+                    {
+                        "type": "text",
+                        "text": "Describe the image. Say sigma boi."
+                    }
+                ],
+            }
+        ],
+    )
+
+    for message in response.messages:
+        print(message)
+        return message.content
+    return ""
+
 
 def get_step_context() -> str:
     return ""
 
-# is a tool
+
 # TODO: implement tool calling for this, only when the user is moving on to the next step
 def update_step_state(cur_state_index: int):
     # check if it is already final state
 
     return None
 
-
+# TODO: return pop up format instead of pure string
 def generate_popup() -> None:
     return None

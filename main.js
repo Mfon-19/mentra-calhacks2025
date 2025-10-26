@@ -7,9 +7,14 @@ const {
   screen,
 } = require("electron");
 const path = require("path");
+const { spawn } = require("child_process");
+const mouseHook = require('mac-mouse-hook');
 
 let mainWindow;
 let overlayWindow = null; // Track the overlay window
+
+// Mouse hook state
+let isMouseHookActive = false;
 
 // Overlay screen function triggered by '/' key - creates a new Electron window
 function triggerOverlayScreen() {
@@ -114,6 +119,67 @@ function triggerOverlayScreen() {
   return overlayWindow;
 }
 
+// Mouse hook functions
+function startMouseMonitoring() {
+  if (isMouseHookActive) {
+    console.log('Mouse hook already active');
+    return;
+  }
+
+  try {
+    mouseHook.start((event) => {
+      // Print coordinates and timestamp
+      console.log(`Mouse click: x=${event.x}, y=${event.y}, timestamp=${new Date().toISOString()}`);
+      
+      // Trigger action on every click
+      triggerDebugAction(event);
+    });
+
+    isMouseHookActive = true;
+  } catch (error) {
+    console.error('Failed to start mouse hook:', error.message);
+    
+    if (error.message.includes('Accessibility permissions')) {
+      console.log('Please enable accessibility permissions in System Preferences > Security & Privacy > Privacy > Accessibility');
+    }
+  }
+}
+
+function stopMouseMonitoring() {
+  if (!isMouseHookActive) {
+    return;
+  }
+
+  try {
+    mouseHook.stop();
+    isMouseHookActive = false;
+  } catch (error) {
+    console.error('Failed to stop mouse hook:', error.message);
+  }
+}
+
+function triggerDebugAction(lastEvent) {
+  console.log(`Action triggered: x=${lastEvent.x}, y=${lastEvent.y}, timestamp=${new Date().toISOString()}`);
+  
+  // Send debug message to main window if it exists
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('mouse-hook-debug', {
+      action: 'click-detected',
+      clickData: lastEvent,
+      timestamp: new Date().toISOString()
+    });
+  }
+  
+  // Send debug message to overlay window if it exists
+  if (overlayWindow && !overlayWindow.isDestroyed()) {
+    overlayWindow.webContents.send('mouse-hook-debug', {
+      action: 'click-detected',
+      clickData: lastEvent,
+      timestamp: new Date().toISOString()
+    });
+  }
+}
+
 function createWindow() {
   // Create the browser window
   mainWindow = new BrowserWindow({
@@ -176,6 +242,9 @@ app.whenReady().then(() => {
     console.log('Registration of global shortcut "/" failed');
   }
 
+  // Start mouse monitoring automatically
+  startMouseMonitoring();
+
   app.on("activate", () => {
     // On macOS, re-create window when dock icon is clicked
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -203,6 +272,11 @@ app.on("window-all-closed", () => {
 
 // Handle app before quit to ensure proper cleanup
 app.on("before-quit", () => {
+  // Stop mouse monitoring
+  if (isMouseHookActive) {
+    stopMouseMonitoring();
+  }
+  
   // Close overlay window if it exists
   if (overlayWindow && !overlayWindow.isDestroyed()) {
     overlayWindow.close();
@@ -275,6 +349,23 @@ ipcMain.handle("take-screenshot", async () => {
     console.error("Error taking screenshot:", error);
     return { success: false, error: error.message };
   }
+});
+
+// Mouse hook IPC handlers
+ipcMain.handle("start-mouse-monitoring", () => {
+  startMouseMonitoring();
+  return { success: true, active: isMouseHookActive };
+});
+
+ipcMain.handle("stop-mouse-monitoring", () => {
+  stopMouseMonitoring();
+  return { success: true, active: isMouseHookActive };
+});
+
+ipcMain.handle("get-mouse-hook-status", () => {
+  return { 
+    active: isMouseHookActive
+  };
 });
 
 // Handle app activation (macOS)
