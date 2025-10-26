@@ -60,7 +60,7 @@ function triggerOverlayScreen() {
         "Overlay dev server not available; falling back to built files"
       );
       overlayWindow.loadFile(
-        path.join(__dirname, "overlay-screen/build/index.html")
+        path.join(__dirname, "overlay-screen/public/index.html")
       );
     });
 
@@ -73,7 +73,7 @@ function triggerOverlayScreen() {
             "Overlay failed to load dev server; loading built files instead"
           );
           overlayWindow.loadFile(
-            path.join(__dirname, "overlay-screen/build/index.html")
+            path.join(__dirname, "overlay-screen/public/index.html")
           );
         }
       }
@@ -81,7 +81,7 @@ function triggerOverlayScreen() {
   } else {
     // In production, load the built React app
     overlayWindow.loadFile(
-      path.join(__dirname, "overlay-screen/build/index.html")
+      path.join(__dirname, "overlay-screen/public/index.html")
     );
   }
 
@@ -141,7 +141,7 @@ function createWindow() {
     mainWindow.loadURL("http://localhost:3000");
   } else {
     // In production, load from built React app
-    mainWindow.loadFile(path.join(__dirname, "frontend/build/index.html"));
+    mainWindow.loadFile(path.join(__dirname, "frontend/public/index.html"));
   }
 
   // Show window when ready
