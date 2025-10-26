@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./OverlayScreen.css";
-import DynamicTextboxDemo from "./DynamicTextboxDemo";
+import screenshotService from "../services/screenshotService";
+import wsClient from "../services/webSocket";
 
 const OverlayScreen = () => {
   const [header, setHeader] = useState("Step 1");
@@ -15,13 +16,24 @@ const OverlayScreen = () => {
         if (payload?.body) setBody(payload.body);
       });
     }
+
+    const url = process.env.REACT_APP_WS_URL || "ws://localhost:5000/ws";
+    wsClient.connectWebSocket(url);
+    const unsubscribe = wsClient.subscribeWebSocket(({ header, body }) => {
+      setHeader(header);
+      setBody(body);
+    });
+
+    return () => {
+      unsubscribe();
+      wsClient.disconnectWebSocket();
+    };
   }, []);
 
   return (
     <div className="overlay-screen">
       <h1 className="overlay-header">{header}</h1>
       <p className="overlay-body">{body}</p>
-      <DynamicTextboxDemo />
     </div>
   );
 };
