@@ -18,14 +18,12 @@ def install_fake_letta_module():
             self._popup_content = "This is a helpful popup."
             self._completion_queue: List[str] = ["YES"]
             self._task_agent_id: Optional[str] = None
-            self._popup_agent_id: Optional[str] = None
 
         def set_behavior(self, popup_message: str, completion_sequence: List[str]):
             self._popup_content = popup_message
             self._completion_queue = list(completion_sequence)
 
-        def set_agent_ids(self, popup_agent_id: str, task_agent_id: str):
-            self._popup_agent_id = popup_agent_id
+        def set_task_agent_id(self, task_agent_id: str):
             self._task_agent_id = task_agent_id
 
         def create(self, agent_id, messages):  # noqa: ARG002 - matches expected signature
@@ -125,8 +123,7 @@ def main():
     # Configure the fake letta message behavior now that agents are created
     messages_api = la.client.agents.messages
     messages_api.set_behavior(popup_message=args.popup, completion_sequence=args.completion)  # type: ignore[attr-defined]
-    messages_api.set_agent_ids(  # type: ignore[attr-defined]
-        popup_agent_id=la.popup_message_agent.id,
+    messages_api.set_task_agent_id(  # type: ignore[attr-defined]
         task_agent_id=la.task_completion_agent.id,
     )
 
