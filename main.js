@@ -1,6 +1,12 @@
-const { app, BrowserWindow, ipcMain, globalShortcut } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  ipcMain,
+  globalShortcut,
+  desktopCapturer,
+  screen,
+} = require("electron");
 const path = require("path");
-const { spawn } = require("child_process");
 
 let mainWindow;
 let overlayWindow = null; // Track the overlay window
@@ -21,17 +27,17 @@ function triggerOverlayScreen() {
 
   // Create a new overlay window - independent from main window
   overlayWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
-    minWidth: 600,
-    minHeight: 400,
+    width: 500,
+    height: 200,
+    minWidth: 200,
+    minHeight: 150,
+    backgroundColor: "#f5f5f0",
     // Remove parent property to make it independent
     // parent: mainWindow, // Removed - now independent
-    // modal: false, // Not needed for independent window`
+    // modal: false, // Not needed for independent window
     alwaysOnTop: true, // Keep it above other windows
-    frame: false, // Frameless for transparent effect
-    transparent: true, // Enable transparency
-    hasShadow: false, // Required for transparent windows on macOS
+    frame: true, // Keep frame for now, can be set to false for frameless
+    // transparent: true, // Uncomment for transparent effect
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -45,23 +51,50 @@ function triggerOverlayScreen() {
   });
 
   // Load content for the overlay window
-  const isDev = process.env.NODE_ENV === "development";
+  const isDev = !app.isPackaged;
 
   if (isDev) {
-    // In development, load from React dev server with a different route
-    overlayWindow.loadURL("http://localhost:3001");
+    // In development, try dev server first; fallback to built files if it fails
+    overlayWindow.loadURL("http://localhost:3001").catch(() => {
+      console.log(
+        "Overlay dev server not available; falling back to built files"
+      );
+      overlayWindow.loadFile(
+        path.join(__dirname, "overlay-screen/public/index.html")
+      );
+    });
+
+    // Also handle async load failures
+    overlayWindow.webContents.on(
+      "did-fail-load",
+      (_event, _errorCode, _errorDescription, validatedURL) => {
+        if (validatedURL && validatedURL.startsWith("http://localhost:3001")) {
+          console.log(
+            "Overlay failed to load dev server; loading built files instead"
+          );
+          overlayWindow.loadFile(
+            path.join(__dirname, "overlay-screen/public/index.html")
+          );
+        }
+      }
+    );
   } else {
     // In production, load the built React app
     overlayWindow.loadFile(
-      path.join(__dirname, "overlay-screen/build/index.html")
+      path.join(__dirname, "overlay-screen/public/index.html")
     );
   }
 
-  // Show window when ready
-  overlayWindow.once("ready-to-show", () => {
+  // Show and initialize after content is fully loaded
+  overlayWindow.webContents.once("did-finish-load", () => {
     overlayWindow.show();
-    overlayWindow.webContents.openDevTools(); // Open DevTools for debugging
     console.log("Overlay window opened");
+
+    // Send initial content to overlay renderer
+    overlayWindow.webContents.send("overlay-set-content", {
+      header: "Step 1",
+      body: "Using prototyping features to connect frames, add interactions, and create clickable mockups that simulate user flows.",
+    });
   });
 
   // Handle overlay window closed
@@ -98,25 +131,22 @@ function createWindow() {
     show: false, // Don't show until ready
   });
 
+  // Backend is managed externally; no backend process started here
+
   // Load the React app
-  const isDev = process.env.NODE_ENV === "development";
+  const isDev = !app.isPackaged;
 
   if (isDev) {
     // In development, load from React dev server
     mainWindow.loadURL("http://localhost:3000");
   } else {
     // In production, load from built React app
-    mainWindow.loadFile(path.join(__dirname, "frontend/build/index.html"));
+    mainWindow.loadFile(path.join(__dirname, "frontend/public/index.html"));
   }
 
   // Show window when ready
   mainWindow.once("ready-to-show", () => {
     mainWindow.show();
-
-    // Open DevTools in development
-    if (isDev) {
-      mainWindow.webContents.openDevTools();
-    }
   });
 
   // Handle window closed
@@ -156,6 +186,15 @@ app.whenReady().then(() => {
 
 // Quit when all windows are closed
 app.on("window-all-closed", () => {
+  // Close overlay window if it exists
+  if (overlayWindow && !overlayWindow.isDestroyed()) {
+    overlayWindow.close();
+    overlayWindow = null;
+  }
+
+  // Unregister all global shortcuts
+  globalShortcut.unregisterAll();
+
   // On macOS, keep app running even when all windows are closed
   if (process.platform !== "darwin") {
     app.quit();
@@ -179,6 +218,11 @@ app.on("web-contents-created", (event, contents) => {
   });
 });
 
+// IPC handlers for communication with renderer process
+ipcMain.handle("get-backend-status", () => ({ isRunning: false }));
+
+ipcMain.handle("restart-backend", () => ({ success: false }));
+
 // IPC handler to trigger overlay screen from renderer
 ipcMain.handle("trigger-child-process", () => {
   try {
@@ -190,6 +234,45 @@ ipcMain.handle("trigger-child-process", () => {
     };
   } catch (error) {
     console.error("Error triggering overlay screen:", error);
+    return { success: false, error: error.message };
+  }
+});
+
+// IPC handler for taking screenshots
+ipcMain.handle("take-screenshot", async () => {
+  try {
+    const sources = await desktopCapturer.getSources({
+      types: ["screen"],
+      thumbnailSize: { width: 1920, height: 1080 },
+    });
+
+    if (sources.length === 0) {
+      throw new Error("No screen sources available");
+    }
+
+    // Get the primary display
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const source =
+      sources.find(
+        (source) =>
+          source.name === "Entire Screen" || source.name === "Screen 1"
+      ) || sources[0];
+
+    // Convert to base64
+    const screenshot = source.thumbnail.toPNG();
+    const base64Image = screenshot.toString("base64");
+
+    return {
+      success: true,
+      data: base64Image,
+      size: screenshot.length,
+      display: {
+        width: primaryDisplay.bounds.width,
+        height: primaryDisplay.bounds.height,
+      },
+    };
+  } catch (error) {
+    console.error("Error taking screenshot:", error);
     return { success: false, error: error.message };
   }
 });
