@@ -105,3 +105,7 @@ export default screenshotService;
 
 // Export the class for testing or multiple instances
 export { ScreenshotService };
+
+
+
+
