@@ -137,11 +137,6 @@ export const sendScreenshot = async () => {
     // Send to backend /screenshot endpoint
     const response = await api.post('/screenshot', {
       image: screenshotResult.data,
-      metadata: {
-        size: screenshotResult.size,
-        display: screenshotResult.display,
-        timestamp: new Date().toISOString()
-      }
     });
     
     return response;

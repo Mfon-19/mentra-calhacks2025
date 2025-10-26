@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./OverlayScreen.css";
 import screenshotService from "../services/screenshotService";
 import wsClient from "../services/webSocket";
+import { startStep, sendScreenshot } from "../services/apiService";
 
 const OverlayScreen = () => {
   const [header, setHeader] = useState("Step 1");
@@ -24,9 +25,33 @@ const OverlayScreen = () => {
       setBody(body);
     });
 
+    let stopped = false;
+
+    async function run() {
+      try {
+        // Trigger popup for current step
+        await startStep();
+
+        // Loop: every 10s send screenshot; backend will compare and advance
+        while (!stopped) {
+          await new Promise((r) => setTimeout(r, 10000));
+          const resp = await sendScreenshot();
+          const d = resp?.data || {};
+          if (d.lesson_completed) break;
+          // if d.completed === true, backend advanced; continue
+          // if false, wait and retry
+        }
+      } catch (e) {
+        console.error("Progress loop error:", e);
+      }
+    }
+
+    run();
+
     return () => {
       unsubscribe();
       wsClient.disconnectWebSocket();
+      stopped = true;
     };
   }, []);
 

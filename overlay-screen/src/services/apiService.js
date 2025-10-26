@@ -77,6 +77,16 @@ export const sendScreenshot = async () => {
   }
 };
 
+// Start current step: triggers popup and sets server state
+export const startStep = async (data = {}) => {
+  try {
+    const response = await api.post('/api/start-step', data);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // Health check
 export const healthCheck = async () => {
   try {

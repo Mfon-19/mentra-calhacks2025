@@ -6,7 +6,13 @@ from datetime import datetime
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit, join_room
-from utils.learning_agent import analyze_screenshot, handle_screenshot_event
+from utils.learning_agent import (
+    analyze_screenshot,
+    handle_screenshot_event,
+    user_state,
+    generate_and_send_popup_message,
+)
+from utils.database_context import db_context
 
 # Add the backend directory to Python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -48,19 +54,84 @@ def screenshot():
         if 'metadata' in data:
             print(f"Screenshot metadata: {data['metadata']}")
 
+        # Determine finish_criteria and lesson_id if provided
+        finish_criteria = data.get('finish_criteria')
+        lesson_id = data.get('lesson_id')
+        step_order = data.get('step_order')
+        user_id = data.get('user_id')
+
+        # If lesson_id and step_order provided but no explicit finish_criteria, derive via batched fetch
+        if (not finish_criteria) and (lesson_id is not None) and (step_order is not None):
+            try:
+                lesson_id_int = int(lesson_id)
+                step_order_int = int(step_order)
+                lesson_data = db_context.get_lesson_steps_batch(lesson_id_int)
+                if step_order_int in lesson_data:
+                    finish_criteria = lesson_data[step_order_int].get('finish_criteria') or ""
+                else:
+                    finish_criteria = ""
+            except Exception as derive_err:
+                print(f"Warning: failed to derive finish_criteria from lesson data: {derive_err}")
+                finish_criteria = ""
+
     except Exception as e:
         return jsonify({
             "message": f"Error processing request: {str(e)}",
             "status": "error"
         }), 400
 
-    result = analyze_screenshot(base64_image)
+    # Decide flow: default to progression-aware handler. If explicitly stateless, skip progression.
+    stateless = bool(data.get('stateless', False))
 
-    return jsonify({
-        "message": "Screenshot analyzed successfully",
-        "status": "success",
-        "analysis": result
-    })
+    if not stateless:
+        # Resolve identifiers from data, then from current user_state, then from defaults
+        resolved_user_id = str(user_id or os.getenv("DEFAULT_USER_ID", "default-user"))
+        resolved_lesson_id = lesson_id
+        resolved_step_order = step_order
+
+        if resolved_lesson_id is None or resolved_step_order is None:
+            existing = user_state.get(resolved_user_id)
+            if existing:
+                resolved_lesson_id = existing.get("lesson_id")
+                resolved_step_order = existing.get("step_order")
+
+        if resolved_lesson_id is None or resolved_step_order is None:
+            # Fallback to defaults (lesson 1, step 1) or environment overrides
+            resolved_lesson_id = int(os.getenv("DEFAULT_LESSON_ID", "1"))
+            resolved_step_order = 1
+
+        try:
+            progression_result = handle_screenshot_event(
+                resolved_user_id,
+                int(resolved_lesson_id),
+                int(resolved_step_order),
+                base64_image,
+            )
+            return jsonify({
+                "status": "success",
+                **progression_result
+            })
+        except Exception as event_err:
+            return jsonify({
+                "message": f"Event handling failed: {str(event_err)}",
+                "status": "error"
+            }), 500
+
+    # Stateless analysis path: compute completion and return
+    try:
+        analysis = analyze_screenshot(base64_image, finish_criteria or "", lesson_id)
+        completed = str(analysis).strip().upper() == "YES"
+        return jsonify({
+            "message": "Screenshot analyzed successfully",
+            "status": "success",
+            "analysis": analysis,
+            "completed": completed
+        })
+    except Exception as analyze_err:
+        return jsonify({
+            "message": f"Analysis failed: {str(analyze_err)}",
+            "status": "error"
+        }), 500
 
 @app.route('/')
 def index():
@@ -77,45 +148,56 @@ def health():
         "service": "calhacks2025-backend"
     })
 
-@app.route('/api/screenshot-event', methods=['POST'])
-def screenshot_event():
-    """
-    Process screenshot event with learning agent flow.
-    Returns completed: true or false
-    
-    Expected JSON payload:
-    {
-        "user_id": "user123",
-        "lesson_id": 1,
-        "step_order": 1,
-        "image": "base64_image_data"
-    }
-    """
+## Removed consolidated event endpoint; use /screenshot only
+
+# Explicit start endpoint to trigger popup and set state before first screenshot
+@app.route('/api/start-step', methods=['POST'])
+def start_step():
     try:
-        data = request.get_json()
-        
-        if not data:
-            return jsonify({"status": "error", "message": "No data provided"}), 400
-        
-        required_fields = ['user_id', 'lesson_id', 'step_order', 'image']
-        for field in required_fields:
-            if field not in data:
-                return jsonify({"status": "error", "message": f"Missing field: {field}"}), 400
-        
-        user_id = data['user_id']
-        lesson_id = int(data['lesson_id'])
-        step_order = int(data['step_order'])
-        base64_image = data['image']
-        
-        # Call handle_screenshot_event which returns completion_result
-        result = handle_screenshot_event(user_id, lesson_id, step_order, base64_image)
-        
-        return jsonify(result)
-        
+        data = request.get_json(silent=True) or {}
+
+        resolved_user_id = str(data.get('user_id') or os.getenv("DEFAULT_USER_ID", "default-user"))
+        lesson_id = data.get('lesson_id')
+        step_order = data.get('step_order')
+
+        # If not provided, derive from current state or defaults
+        existing = user_state.get(resolved_user_id)
+        if lesson_id is None:
+            lesson_id = existing.get('lesson_id') if existing else int(os.getenv("DEFAULT_LESSON_ID", "1"))
+        if step_order is None:
+            step_order = existing.get('step_order') if existing else 1
+
+        lesson_id = int(lesson_id)
+        step_order = int(step_order)
+
+        # Load lesson data and send popup for current step
+        lesson_data = db_context.get_lesson_steps_batch(lesson_id)
+        if step_order not in lesson_data:
+            return jsonify({
+                "status": "error",
+                "message": f"Step {step_order} not found for lesson {lesson_id}"
+            }), 400
+
+        step_description = lesson_data[step_order].get('description') or ""
+        generate_and_send_popup_message("", step_description, resolved_user_id)
+
+        # Update state to indicate popup already sent for this step
+        state = user_state.setdefault(resolved_user_id, {"lesson_id": lesson_id, "step_order": step_order, "popup_sent_for_step": True})
+        state["lesson_id"] = lesson_id
+        state["step_order"] = step_order
+        state["popup_sent_for_step"] = True
+
+        return jsonify({
+            "status": "success",
+            "message": "Step initialized and popup sent",
+            "user_id": resolved_user_id,
+            "lesson_id": lesson_id,
+            "step_order": step_order
+        })
     except Exception as e:
         return jsonify({
             "status": "error",
-            "message": f"Internal error: {str(e)}"
+            "message": f"Failed to start step: {str(e)}"
         }), 500
 
 # WebSocket API endpoint for sending popup messages

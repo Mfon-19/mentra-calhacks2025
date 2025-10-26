@@ -53,7 +53,7 @@ def handle_screenshot_event(user_id: str, lesson_id: int, step_order: int, base6
         lesson_data = _ensure_lesson_loaded(lesson_id)
         if not lesson_data or step_order not in lesson_data:
             logger.warning(f"Lesson {lesson_id} or step {step_order} not found")
-            return {"status": "end", "message": "Lesson or step not found"}
+            return {"completed": False, "error": "Lesson or step not found"}
 
         # Update user state
         state = user_state.setdefault(user_id, {"lesson_id": lesson_id, "step_order": step_order, "popup_sent_for_step": False})
@@ -68,7 +68,7 @@ def handle_screenshot_event(user_id: str, lesson_id: int, step_order: int, base6
         if not state.get("popup_sent_for_step"):
             popup_message = generate_and_send_popup_message(base64_image, step_description, user_id)
             state["popup_sent_for_step"] = True
-            return {"status": "popup_sent", "popup_message": popup_message, "step_order": step_order}
+            return {"completed": False, "step_order": step_order}
 
         # Otherwise, check completion using this latest screenshot
         completion_result = analyze_screenshot(base64_image, finish_criteria, lesson_id)
@@ -80,17 +80,17 @@ def handle_screenshot_event(user_id: str, lesson_id: int, step_order: int, base6
                 # Advance to next step; reset popup flag
                 state["step_order"] = next_step_order
                 state["popup_sent_for_step"] = False
-                return {"status": "step_advanced", "next_step_order": next_step_order, "completed": True}
+                return {"completed": True, "next_step_order": next_step_order}
             else:
                 # Lesson complete
                 user_state.pop(user_id, None)
-                return {"status": "lesson_completed", "message": f"Lesson {lesson_id} completed.", "completed": True}
+                return {"completed": True, "lesson_completed": True}
 
         # Not completed; wait for another screenshot
-        return {"status": "not_completed", "step_order": step_order, "completed": False}
+        return {"completed": False, "step_order": step_order}
     except Exception as e:
         logger.error(f"Error in handle_screenshot_event: {e}")
-        return {"status": "error", "message": f"Internal error: {str(e)}"}
+        return {"completed": False, "error": f"Internal error: {str(e)}"}
 
 # Agent: Task completion decider
 SYSTEM_PROMPT = """You are a task completion decider. Your ONLY job is to determine if a user has completed a task by comparing their screenshot against the finish criteria.

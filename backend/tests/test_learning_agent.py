@@ -167,21 +167,19 @@ def test_handle_screenshot_event_popup_then_not_completed_then_completed(monkeyp
     # First call should send popup
     monkeypatch.setattr(la, "generate_and_send_popup_message", lambda img, desc, user_id=None: "Popup")  # noqa: ARG005
     out1 = la.handle_screenshot_event(user_id="u", lesson_id=1, step_order=1, base64_image="img")
-    assert out1["status"] == "popup_sent"
+    assert out1["completed"] is False
     assert out1["step_order"] == 1
-    assert out1["popup_message"] == "Popup"
 
     # Second call not completed
     monkeypatch.setattr(la, "analyze_screenshot", lambda img, crit, lesson_id=None: "NO")  # noqa: ARG005
     out2 = la.handle_screenshot_event(user_id="u", lesson_id=1, step_order=1, base64_image="img")
-    assert out2["status"] == "not_completed"
+    assert out2["completed"] is False
 
     # Third call completed -> lesson_completed (no next step exists)
     monkeypatch.setattr(la, "analyze_screenshot", lambda img, crit, lesson_id=None: "YES")  # noqa: ARG005
     out3 = la.handle_screenshot_event(user_id="u", lesson_id=1, step_order=1, base64_image="img")
-    assert out3["status"] in {"step_advanced", "lesson_completed"}
-    # With only one step, we expect lesson_completed
-    assert out3["status"] == "lesson_completed"
+    assert out3["completed"] is True
+    assert out3["lesson_completed"] is True
 
 
 def test_execute_learning_flow_completes_lesson(monkeypatch, no_sleep):
@@ -201,10 +199,11 @@ def test_execute_learning_flow_completes_lesson(monkeypatch, no_sleep):
     assert result["status"] == "lesson_completed"
 
 
-def test_handle_screenshot_event_missing_step_returns_end(monkeypatch):
+def test_handle_screenshot_event_missing_step_returns_error(monkeypatch):
     # No steps for the lesson
     monkeypatch.setattr(la.db_context, "get_lesson_steps_batch", lambda lesson_id: {})  # noqa: ARG005
     out = la.handle_screenshot_event(user_id="u", lesson_id=123, step_order=9, base64_image="img")
-    assert out["status"] == "end"
+    assert out["completed"] is False
+    assert "error" in out
 
 
