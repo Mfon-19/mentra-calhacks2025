@@ -1,5 +1,9 @@
 from flask import Blueprint, jsonify, request
 
+from lesson_generator import generate_full_course
+from tools.bright_data_tool import scrape_to_txt
+from upload_to_supabase_simple import upload_course_to_supabase
+
 # Create a blueprint for lesson plan routes
 lesson_plans_bp = Blueprint('lesson_plans', __name__)
 
@@ -8,18 +12,15 @@ def generateLessonPlan():
     """Generate a new lesson plan based on input parameters"""
     try:
         data = request.get_json()
+        lesson_topic = data.get('topic')
         
-        # Validate required parameters
-        if not data:
+        if not lesson_topic:
             return jsonify({"error": "No data provided"}), 400
         
-        # TODO: Implement lesson plan generation logic
-        # This could involve:
-        # - Processing input parameters (subject, grade level, duration, etc.)
-        # - Calling AI/ML services for content generation
-        # - Structuring the lesson plan format
-        # - Saving to database
-        
+        scrape_to_txt(lesson_topic)
+        generate_full_course()
+        upload_course_to_supabase()
+
         # Placeholder response
         generated_lesson_plan = {
             "id": None,  # Will be generated after saving

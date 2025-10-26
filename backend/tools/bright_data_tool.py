@@ -15,6 +15,7 @@ proxies = {
     'https': proxy_url
 }
 
+# TODO: fix certificate verification issue
 def scrape_to_txt(topic: str) -> None:
     url = f"https://www.google.com/search?q={topic}&num=10&brd_json=1"
     response = requests.get(url, proxies=proxies, verify=False)
@@ -22,8 +23,6 @@ def scrape_to_txt(topic: str) -> None:
 
     links = [result['link'] for result in data.get('organic', [])]
     print(links)
-
-    import json
 
     client = bdclient(api_token="d88ddda820aab54aa356eeeda830f1c3be73c26b00f55fd3af20e801f64fd9b0")
 
@@ -69,3 +68,6 @@ def scrape_to_txt(topic: str) -> None:
             f.write(f"\n\n")
 
     print(f'\n💾 Saved {len(results)} results to scraped_results.txt')
+
+if __name__ == '__main__':
+    scrape_to_txt("figmaguide")
