@@ -15,7 +15,6 @@ proxies = {
     'https': proxy_url
 }
 
-# TODO: fix certificate verification issue
 def scrape_to_txt(topic: str) -> None:
     url = f"https://www.google.com/search?q={topic}&num=10&brd_json=1"
     response = requests.get(url, proxies=proxies, verify=False)
