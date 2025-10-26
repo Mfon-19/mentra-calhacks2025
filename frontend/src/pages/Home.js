@@ -1,95 +1,206 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import "./Home.css";
 
 const Home = () => {
-  const [childOutput, setChildOutput] = useState("");
-  const [isElectron, setIsElectron] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
-  useEffect(() => {
-    // Check if we're running in Electron
-    setIsElectron(!!window.electronAPI);
-
-    // Listen for child process output
-    if (window.electronAPI) {
-      window.electronAPI.onChildProcessOutput((data) => {
-        setChildOutput(data);
-      });
-    }
-  }, []);
+  const handleSubmit = () => {
+    setIsSubmitted(true);
+  };
 
   const handleTriggerChildProcess = async () => {
     if (window.electronAPI) {
       try {
         const result = await window.electronAPI.triggerChildProcess();
-        console.log("Child process result:", result);
-        setChildOutput("Child window created successfully!");
       } catch (error) {
-        console.error("Error triggering child process:", error);
-        setChildOutput("Error: " + error.message);
+        console.error("Error triggering child process: ", error);
       }
     } else {
-      setChildOutput("Not running in Electron environment");
+      console.error("Not running in Electron environment");
     }
   };
 
-  return (
-    <div className="container">
-      <div className="card">
-        <h1>Welcome to CalHacks 2025</h1>
-        <p>Educational Platform for Lesson Planning and Media Management</p>
+  const lessonItems = [
+    "Understanding the Figma interface, including the toolbar, layers panel, properties panel, and how to navigate the canvas effectively.",
+    "Creating and manipulating basic shapes, using selection tools, and applying transformations like rotation, scaling, and positioning.",
+    "Working with frames and artboards to organize your designs and create responsive layouts for different screen sizes.",
+    "Mastering text tools, typography settings, and text styling to create readable and visually appealing content.",
+    "Using the pen tool and vector editing capabilities to create custom shapes, icons, and illustrations.",
+    "Applying colors, gradients, and effects like shadows, blurs, and strokes to enhance your designs.",
+    "Creating and managing components and variants to build reusable design elements and maintain consistency across projects.",
+    "Understanding auto layout to create flexible, responsive designs that automatically adjust to content changes.",
+    "Using prototyping features to connect frames, add interactions, and create clickable mockups that simulate user flows.",
+    "Collaborating with team members through commenting, sharing files, and using version history to track design changes.",
+  ];
 
-        <div style={{ marginTop: "30px" }}>
-          <p>Welcome to the CalHacks 2025 educational platform!</p>
-
-          {isElectron && (
-            <div
+  if (isSubmitted) {
+    return (
+      <div className="home-container">
+        <section className="hero-section">
+          <div className="hero-background"></div>
+          <div
+            style={{
+              width: "60%",
+              margin: "0 auto",
+              padding: "40px 32px 200px",
+            }}>
+            <h2
               style={{
-                marginTop: "20px",
-                padding: "20px",
-                backgroundColor: "#f8f9fa",
-                borderRadius: "8px",
+                fontSize: 36,
+                marginBottom: 40,
+                color: "#2d2d2d",
+                fontFamily: "inherit",
               }}>
-              <h3>Electron Features</h3>
-              <p>
-                Press <kbd>/</kbd> key anywhere to open a child window, or click
-                the button below:
-              </p>
-
-              <button
-                className="btn btn-primary"
-                onClick={handleTriggerChildProcess}
-                style={{ marginTop: "10px" }}>
-                Open Child Window
-              </button>
-
-              {childOutput && (
-                <div
+              <i>Lessons to be learned...</i>
+            </h2>
+            <ol
+              style={{
+                fontSize: 18,
+                lineHeight: 1.8,
+                fontFamily: "inherit",
+                color: "#2d2d2d",
+                paddingLeft: 30,
+              }}>
+              {lessonItems.map((lesson, index) => (
+                <li
+                  key={index}
                   style={{
-                    marginTop: "15px",
-                    padding: "10px",
-                    backgroundColor: "#e9ecef",
-                    borderRadius: "4px",
-                    fontFamily: "monospace",
+                    marginBottom: 24,
                   }}>
-                  <strong>Output:</strong> {childOutput}
-                </div>
-              )}
-            </div>
-          )}
+                  {lesson}
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
 
-          {!isElectron && (
-            <div
-              style={{
-                marginTop: "20px",
-                padding: "20px",
-                backgroundColor: "#fff3cd",
-                borderRadius: "8px",
-              }}>
-              <p>
-                <strong>Note:</strong> This app is designed to run in Electron.
-                Some features may not be available in a regular browser.
-              </p>
-            </div>
-          )}
+        <div
+          style={{
+            position: "fixed",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            padding: "24px 32px",
+            background: "transparent",
+            zIndex: 1000,
+            display: "flex",
+            justifyContent: "center",
+          }}>
+          <button
+            onClick={handleTriggerChildProcess}
+            style={{
+              height: 72,
+              padding: "0 80px",
+              borderRadius: 40,
+              border: "none",
+              background: "#3b82f6",
+              color: "#ffffff",
+              fontWeight: 600,
+              fontSize: 20,
+              cursor: "pointer",
+              boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)",
+              transition: "all 0.2s ease",
+              fontFamily: "inherit",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = "#2563eb";
+              e.target.style.transform = "scale(1.05)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = "#3b82f6";
+              e.target.style.transform = "scale(1)";
+            }}>
+            Start
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="home-container">
+      <section className="hero-section">
+        <div className="hero-background"></div>
+        <div className="hero-content">
+          <h1 className="hero-title">
+            Learn <i>Anything</i> Fast
+          </h1>
+        </div>
+      </section>
+
+      <div
+        style={{
+          position: "fixed",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          padding: "24px 32px",
+          background: "transparent",
+          zIndex: 1000,
+        }}>
+        <div
+          style={{
+            maxWidth: 1200,
+            margin: "0 auto",
+            position: "relative",
+          }}>
+          <input
+            type="text"
+            placeholder="Ask anything"
+            style={{
+              width: "100%",
+              height: 144,
+              padding: "0 180px 0 28px",
+              borderRadius: 80,
+              border: "1.5px solid rgba(0,0,0,0.12)",
+              outline: "none",
+              fontSize: 18,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+              transition: "all 0.2s ease",
+              fontFamily: "inherit",
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = "rgba(59, 130, 246, 0.5)";
+              e.target.style.boxShadow = "0 4px 12px rgba(59, 130, 246, 0.15)";
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = "rgba(0,0,0,0.12)";
+              e.target.style.boxShadow = "0 2px 8px rgba(0,0,0,0.04)";
+            }}
+          />
+          <button
+            onClick={handleSubmit}
+            style={{
+              position: "absolute",
+              right: 16,
+              top: "50%",
+              transform: "translateY(-50%)",
+              height: 112,
+              width: 112,
+              borderRadius: "50%",
+              border: "none",
+              background: "#3b82f6",
+              color: "#ffffff",
+              fontWeight: 600,
+              fontSize: 24,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)",
+              transition: "all 0.2s ease",
+              fontFamily: "inherit",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = "#2563eb";
+              e.target.style.transform = "translateY(-50%) scale(1.05)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = "#3b82f6";
+              e.target.style.transform = "translateY(-50%) scale(1)";
+            }}>
+            →
+          </button>
         </div>
       </div>
     </div>
