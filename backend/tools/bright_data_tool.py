@@ -15,56 +15,57 @@ proxies = {
     'https': proxy_url
 }
 
-url = "https://www.google.com/search?q=figmaguide&num=10&brd_json=1"
-response = requests.get(url, proxies=proxies, verify=False)
-data = response.json()
+def scrape_to_txt(topic: str) -> None:
+    url = f"https://www.google.com/search?q={topic}&num=10&brd_json=1"
+    response = requests.get(url, proxies=proxies, verify=False)
+    data = response.json()
 
-links = [result['link'] for result in data.get('organic', [])]
-print(links)
+    links = [result['link'] for result in data.get('organic', [])]
+    print(links)
 
-import json
+    import json
 
-client = bdclient(api_token="d88ddda820aab54aa356eeeda830f1c3be73c26b00f55fd3af20e801f64fd9b0")
+    client = bdclient(api_token="d88ddda820aab54aa356eeeda830f1c3be73c26b00f55fd3af20e801f64fd9b0")
 
-results = []
+    results = []
 
-for link in links:
-    try:
-        html = client.scrape(url=link)
-        soup = BeautifulSoup(html, 'html.parser')
-        
-        # Remove unwanted tags
-        for tag in soup(['script', 'style', 'nav', 'footer', 'header', 'aside', 'iframe']):
-            tag.decompose()
-        
-        # Extract main content
-        main = soup.find('main') or soup.find('article') or soup.body
-        text = main.get_text(separator='\n', strip=True) if main else soup.get_text(separator='\n', strip=True)
-        
-        results.append({
-            'url': link,
-            'content': text
-        })
-        
-        print(f'✅ Scraped: {link}')
-        
-    except Exception as e:
-        print(f'❌ Failed: {link} - {e}')
-        results.append({
-            'url': link,
-            'error': str(e)
-        })
+    for link in links:
+        try:
+            html = client.scrape(url=link)
+            soup = BeautifulSoup(html, 'html.parser')
 
-# Save to text file
-with open('scraped_results.txt', 'w', encoding='utf-8') as f:
-    for item in results:
-        f.write(f"{'='*80}\n")
-        f.write(f"URL: {item['url']}\n")
-        f.write(f"{'='*80}\n")
-        if 'error' in item:
-            f.write(f"ERROR: {item['error']}\n")
-        else:
-            f.write(item['content'])
-        f.write(f"\n\n")
+            # Remove unwanted tags
+            for tag in soup(['script', 'style', 'nav', 'footer', 'header', 'aside', 'iframe']):
+                tag.decompose()
 
-print(f'\n💾 Saved {len(results)} results to scraped_results.txt')
+            # Extract main content
+            main = soup.find('main') or soup.find('article') or soup.body
+            text = main.get_text(separator='\n', strip=True) if main else soup.get_text(separator='\n', strip=True)
+
+            results.append({
+                'url': link,
+                'content': text
+            })
+
+            print(f'✅ Scraped: {link}')
+
+        except Exception as e:
+            print(f'❌ Failed: {link} - {e}')
+            results.append({
+                'url': link,
+                'error': str(e)
+            })
+
+    # Save to text file
+    with open('scraped_results.txt', 'w', encoding='utf-8') as f:
+        for item in results:
+            f.write(f"{'='*80}\n")
+            f.write(f"URL: {item['url']}\n")
+            f.write(f"{'='*80}\n")
+            if 'error' in item:
+                f.write(f"ERROR: {item['error']}\n")
+            else:
+                f.write(item['content'])
+            f.write(f"\n\n")
+
+    print(f'\n💾 Saved {len(results)} results to scraped_results.txt')
