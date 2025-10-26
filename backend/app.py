@@ -16,9 +16,11 @@ CORS(app)  # Allow React to make requests
 from routes import api_routes
 from routes.lesson_plans import lesson_plans_bp
 from routes.media_routes import media_bp
+from routes.test_db import test_db_bp
 
 # Register blueprints
 app.register_blueprint(api_routes.bp)
+app.register_blueprint(test_db_bp, url_prefix="/api")
 app.register_blueprint(lesson_plans_bp, url_prefix='/api')
 app.register_blueprint(media_bp, url_prefix='/api')
 
@@ -27,20 +29,20 @@ def screenshot():
     try:
         # Get the request data
         data = request.get_json()
-        
+
         if not data or 'image' not in data:
             return jsonify({
                 "message": "No image data provided",
                 "status": "error"
             }), 400
-        
+
         # Extract the base64 image data from the request
         base64_image = data['image']
-        
+
         # Optional: Log metadata if provided
         if 'metadata' in data:
             print(f"Screenshot metadata: {data['metadata']}")
-        
+
     except Exception as e:
         return jsonify({
             "message": f"Error processing request: {str(e)}",

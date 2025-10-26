@@ -13,9 +13,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Screenshot functionality
   takeScreenshot: () => ipcRenderer.invoke('take-screenshot'),
   
+  // Mouse hook control
+  startMouseMonitoring: () => ipcRenderer.invoke('start-mouse-monitoring'),
+  stopMouseMonitoring: () => ipcRenderer.invoke('stop-mouse-monitoring'),
+  getMouseHookStatus: () => ipcRenderer.invoke('get-mouse-hook-status'),
+  
   // Listen for child process output
   onChildProcessOutput: (callback) => {
     ipcRenderer.on('child-process-output', (event, data) => callback(data));
+  },
+  
+  // Listen for mouse hook debug messages
+  onMouseHookDebug: (callback) => {
+    ipcRenderer.on('mouse-hook-debug', (event, data) => callback(data));
   },
   
   // Platform information
