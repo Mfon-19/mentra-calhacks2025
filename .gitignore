@@ -123,3 +123,4 @@ package-lock.json
 yarn.lock
 pnpm-lock.yaml
 /.history
+package-lock.json
