@@ -1,0 +1,282 @@
+[
+  {
+    "chapter": 1,
+    "title": "Introduction to Figma",
+    "description": "Learn the basics of Figma, its interface, and how to create a new project, including setting up your account, understanding the toolbar, and navigating the workspace",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Set up your Figma account",
+        "instruction": "Go to www.figma.com, click 'Get started', enter your details, and complete a quick verification activity",
+        "figma_feature": "Figma account creation",
+        "finished_criteria": "The Figma dashboard appears with a few onboarding questions"
+      },
+      {
+        "step": 2,
+        "title": "Create a new project",
+        "instruction": "Click the 'New Project' button on the Figma dashboard",
+        "figma_feature": "New project creation",
+        "finished_criteria": "A new project file opens with a blank canvas and a layers panel"
+      },
+      {
+        "step": 3,
+        "title": "Enable rulers",
+        "instruction": "Open the Main menu, hover over 'View', and select 'Rulers'",
+        "figma_feature": "Rulers",
+        "finished_criteria": "Rulers appear on the top and left side of the canvas"
+      },
+      {
+        "step": 4,
+        "title": "Create a new frame",
+        "instruction": "Click and drag on the canvas to create a new frame",
+        "figma_feature": "Frame creation",
+        "finished_criteria": "A blue rectangle appears on the canvas and a new frame named 'Frame 1' appears in the layers panel"
+      },
+      {
+        "step": 5,
+        "title": "Add a rectangle layer",
+        "instruction": "Click the 'Rectangle' tool in the toolbar and click and drag on the canvas to create a new rectangle",
+        "figma_feature": "Rectangle tool",
+        "finished_criteria": "A new rectangle layer appears on the canvas and in the layers panel"
+      },
+      {
+        "step": 6,
+        "title": "Use the Arrange and Align commands",
+        "instruction": "Select the rectangle layer, go to the 'Arrange' menu, and select 'Align' to center the rectangle horizontally and vertically",
+        "figma_feature": "Arrange and Align commands",
+        "finished_criteria": "The rectangle is centered horizontally and vertically within the frame"
+      },
+      {
+        "step": 7,
+        "title": "Zoom in and out",
+        "instruction": "Use the zoom controls in the toolbar or the keyboard shortcuts to zoom in and out of the canvas",
+        "figma_feature": "Zoom controls",
+        "finished_criteria": "The canvas zooms in and out, and the rectangle and frame appear larger or smaller"
+      }
+    ]
+  },
+  {
+    "chapter": 2,
+    "title": "Design Fundamentals",
+    "description": "Understand the principles of design, including typography, color theory, and layout, and learn how to apply them in Figma to create visually appealing designs",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Enable Rulers",
+        "instruction": "Open the Main menu, hover over View, and select Rulers to enable rulers on the canvas.",
+        "figma_feature": "Rulers",
+        "finished_criteria": "The rulers are displayed on the top and left side of the canvas."
+      },
+      {
+        "step": 2,
+        "title": "Create a New Guide",
+        "instruction": "Click and drag on the horizontal or vertical ruler to pull a guide onto the canvas.",
+        "figma_feature": "Guides",
+        "finished_criteria": "A new guide appears on the canvas, indicated by a dotted line."
+      },
+      {
+        "step": 3,
+        "title": "Create a New Frame",
+        "instruction": "Use the Rectangle tool to draw a new frame on the canvas.",
+        "figma_feature": "Frames",
+        "finished_criteria": "A new frame appears on the canvas, with a blue border indicating it is selected."
+      },
+      {
+        "step": 4,
+        "title": "Add Text to the Frame",
+        "instruction": "Use the Text tool to add text to the new frame.",
+        "figma_feature": "Text Layers",
+        "finished_criteria": "The text appears inside the frame, and the Layers panel shows a new text layer."
+      },
+      {
+        "step": 5,
+        "title": "Apply a Color Style",
+        "instruction": "Use the Color Picker to apply a color style to the text and frame.",
+        "figma_feature": "Color Styles",
+        "finished_criteria": "The text and frame have the selected color applied, and the Styles panel shows a new color style."
+      },
+      {
+        "step": 6,
+        "title": "Use Auto Layout",
+        "instruction": "Toggle on Auto Layout in the frame to arrange the text and other layers automatically.",
+        "figma_feature": "Auto Layout",
+        "finished_criteria": "The layers inside the frame are arranged automatically, and the Auto Layout icon is displayed in the Layers panel."
+      },
+      {
+        "step": 7,
+        "title": "Create a Prototype",
+        "instruction": "Use the Prototype tool to connect the frame to another frame or screen.",
+        "figma_feature": "Prototyping",
+        "finished_criteria": "A new prototype connection appears, indicated by a blue arrow, and the Prototype panel shows a new interaction."
+      }
+    ]
+  },
+  {
+    "chapter": 3,
+    "title": "Working with Objects and Layers",
+    "description": "Discover how to create and manipulate objects, including shapes, text, and images, and learn how to organize them using layers, frames, and groups in Figma",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Create a New Frame",
+        "instruction": "Click on the Rectangle tool in the toolbar and drag it onto the canvas to create a new frame",
+        "figma_feature": "Rectangle tool",
+        "finished_criteria": "A new frame named Frame 1 appears on the canvas"
+      },
+      {
+        "step": 2,
+        "title": "Add Text to the Frame",
+        "instruction": "Select the Text tool and click inside the frame to add a new text layer",
+        "figma_feature": "Text tool",
+        "finished_criteria": "A new text layer with the text 'Text' appears inside the frame"
+      },
+      {
+        "step": 3,
+        "title": "Arrange and Align Layers",
+        "instruction": "Use the Arrange and Align commands to position the text layer in the center of the frame",
+        "figma_feature": "Arrange and Align commands",
+        "finished_criteria": "The text layer is centered both horizontally and vertically within the frame"
+      },
+      {
+        "step": 4,
+        "title": "Create a New Guide",
+        "instruction": "Enable rulers and click and drag on the horizontal or vertical ruler to pull a guide onto the canvas",
+        "figma_feature": "Guides",
+        "finished_criteria": "A new guide appears on the canvas, indicated by a dotted line"
+      },
+      {
+        "step": 5,
+        "title": "Group Layers",
+        "instruction": "Select the frame and text layer, then right-click and select Group to group the layers",
+        "figma_feature": "Grouping",
+        "finished_criteria": "The frame and text layer are grouped together, indicated by a folder icon in the Layers panel"
+      },
+      {
+        "step": 6,
+        "title": "Use Auto Layout",
+        "instruction": "Select the group and toggle on Auto Layout to enable automatic layout adjustments",
+        "figma_feature": "Auto Layout",
+        "finished_criteria": "The group's layout adjusts automatically, with the text layer centered within the frame"
+      },
+      {
+        "step": 7,
+        "title": "Adjust Corner Radius and Smoothing",
+        "instruction": "Select the frame and adjust the corner radius and smoothing settings in the Properties panel",
+        "figma_feature": "Corner Radius and Smoothing",
+        "finished_criteria": "The frame's corners are rounded, with a smooth curve"
+      }
+    ]
+  },
+  {
+    "chapter": 4,
+    "title": "User Interface Design",
+    "description": "Learn how to design user interfaces using Figma, including creating wireframes, prototypes, and high-fidelity designs, and understand how to use Figma's built-in UI kits and plugins",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Create a New Frame",
+        "instruction": "Go to the Figma toolbar and click on the Frame tool, then drag and drop it onto the canvas to create a new frame",
+        "figma_feature": "Frame tool",
+        "finished_criteria": "A new frame named Frame 1 appears on the canvas"
+      },
+      {
+        "step": 2,
+        "title": "Add a Rectangle Layer",
+        "instruction": "Select the Rectangle tool from the Figma toolbar and draw a rectangle inside the newly created frame",
+        "figma_feature": "Rectangle tool",
+        "finished_criteria": "A blue rectangle appears inside the frame on the canvas"
+      },
+      {
+        "step": 3,
+        "title": "Enable Rulers and Add Guides",
+        "instruction": "Open the Main menu, hover over View, and select Rulers to enable rulers on the canvas, then click and drag on the horizontal or vertical ruler to pull a guide onto the canvas",
+        "figma_feature": "Rulers and Guides",
+        "finished_criteria": "Rulers appear on the top and left side of the canvas and a new guide is visible on the canvas"
+      },
+      {
+        "step": 4,
+        "title": "Create Text Layer",
+        "instruction": "Select the Text tool from the Figma toolbar and click inside the frame to create a new text layer",
+        "figma_feature": "Text tool",
+        "finished_criteria": "A new text layer with a blinking cursor appears inside the frame on the canvas"
+      },
+      {
+        "step": 5,
+        "title": "Use Auto Layout",
+        "instruction": "Select the frame and go to the right sidebar, then toggle on Auto Layout and adjust the horizontal and vertical flows",
+        "figma_feature": "Auto Layout",
+        "finished_criteria": "The frame's layers are rearranged according to the auto layout settings and the layers panel shows the updated frame structure"
+      },
+      {
+        "step": 6,
+        "title": "Create a Prototype",
+        "instruction": "Go to the Prototype tab in the right sidebar, then click on the + button to create a new prototype and connect the frames",
+        "figma_feature": "Prototyping",
+        "finished_criteria": "A new prototype is created and the frames are connected with arrows indicating the prototype flow"
+      },
+      {
+        "step": 7,
+        "title": "Preview the Prototype",
+        "instruction": "Click on the Play button to preview the prototype and interact with the connected frames",
+        "figma_feature": "Prototype preview",
+        "finished_criteria": "The prototype is displayed in a new window and the frames can be interacted with as a functional app"
+      }
+    ]
+  },
+  {
+    "chapter": 5,
+    "title": "Collaboration and Prototyping",
+    "description": "Learn how to collaborate with others in Figma, including real-time commenting and editing, and discover how to create interactive prototypes to test and validate your designs",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Enable Rulers",
+        "instruction": "Open the Main menu, hover over View, and select Rulers to enable rulers on the canvas",
+        "figma_feature": "Rulers",
+        "finished_criteria": "The rulers are visible on the top and left side of the canvas"
+      },
+      {
+        "step": 2,
+        "title": "Create a New Guide",
+        "instruction": "Click and drag on the horizontal or vertical ruler to pull a guide onto the canvas",
+        "figma_feature": "Guides",
+        "finished_criteria": "A new guide appears on the canvas, indicated by a dotted line"
+      },
+      {
+        "step": 3,
+        "title": "Create a New Frame",
+        "instruction": "Use the Frame tool to create a new frame on the canvas",
+        "figma_feature": "Frames",
+        "finished_criteria": "A new frame appears on the canvas, with a blue border and a name like Frame 1"
+      },
+      {
+        "step": 4,
+        "title": "Add a Comment",
+        "instruction": "Use the Comment tool to add a comment to the frame",
+        "figma_feature": "Comments",
+        "finished_criteria": "A new comment appears on the canvas, with a speech bubble icon and the user's name"
+      },
+      {
+        "step": 5,
+        "title": "Create a Prototype Connection",
+        "instruction": "Use the Prototype tool to create a connection between two frames",
+        "figma_feature": "Prototyping",
+        "finished_criteria": "A new connection appears between the two frames, indicated by a blue arrow"
+      },
+      {
+        "step": 6,
+        "title": "Preview the Prototype",
+        "instruction": "Use the Preview tool to view the prototype in presentation mode",
+        "figma_feature": "Prototyping",
+        "finished_criteria": "The prototype is displayed in presentation mode, with the frames and connections visible"
+      },
+      {
+        "step": 7,
+        "title": "Share the Prototype",
+        "instruction": "Use the Share tool to share the prototype with others",
+        "figma_feature": "Sharing",
+        "finished_criteria": "A share link is generated, and the prototype can be accessed by others"
+      }
+    ]
+  }
+]

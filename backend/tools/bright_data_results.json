@@ -1,0 +1,26 @@
+[
+  {
+    "url": "https://www.figma.com/blog/",
+    "status": 200,
+    "content_length": 0,
+    "content": ""
+  },
+  {
+    "url": "https://help.figma.com/",
+    "status": 200,
+    "content_length": 0,
+    "content": ""
+  },
+  {
+    "url": "https://www.youtube.com/results?search_query=figma+tutorial",
+    "status": 200,
+    "content_length": 0,
+    "content": ""
+  },
+  {
+    "url": "https://www.figma.com/community/",
+    "status": 200,
+    "content_length": 0,
+    "content": ""
+  }
+]
