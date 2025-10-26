@@ -1,17 +1,39 @@
 import React, { useState } from "react";
 import "./Home.css";
+import { generateLessonPlan } from "../services/apiService";
 
 const Home = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [topic, setTopic] = useState("");
+  const [generatedLessons, setGeneratedLessons] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = () => {
-    setIsSubmitted(true);
+  const handleSubmit = async () => {
+    if (!topic.trim()) {
+      setError("Please enter a topic");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await generateLessonPlan({ topic: topic.trim() });
+      setGeneratedLessons(response.data.generated_lesson_plan || []);
+      setIsSubmitted(true);
+    } catch (err) {
+      setError("Failed to generate lesson plan. Please try again.");
+      console.error("Error generating lesson plan:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleTriggerChildProcess = async () => {
     if (window.electronAPI) {
       try {
-        const result = await window.electronAPI.triggerChildProcess();
+        await window.electronAPI.triggerChildProcess();
       } catch (error) {
         console.error("Error triggering child process: ", error);
       }
@@ -20,20 +42,43 @@ const Home = () => {
     }
   };
 
-  const lessonItems = [
-    "Understanding the Figma interface, including the toolbar, layers panel, properties panel, and how to navigate the canvas effectively.",
-    "Creating and manipulating basic shapes, using selection tools, and applying transformations like rotation, scaling, and positioning.",
-    "Working with frames and artboards to organize your designs and create responsive layouts for different screen sizes.",
-    "Mastering text tools, typography settings, and text styling to create readable and visually appealing content.",
-    "Using the pen tool and vector editing capabilities to create custom shapes, icons, and illustrations.",
-    "Applying colors, gradients, and effects like shadows, blurs, and strokes to enhance your designs.",
-    "Creating and managing components and variants to build reusable design elements and maintain consistency across projects.",
-    "Understanding auto layout to create flexible, responsive designs that automatically adjust to content changes.",
-    "Using prototyping features to connect frames, add interactions, and create clickable mockups that simulate user flows.",
-    "Collaborating with team members through commenting, sharing files, and using version history to track design changes.",
-  ];
 
-  if (isSubmitted) {
+  if (isLoading) {
+    return (
+      <div className="home-container">
+        <section className="hero-section">
+          <div className="hero-background"></div>
+          <div
+            style={{
+              width: "60%",
+              margin: "0 auto",
+              padding: "40px 32px 200px",
+              textAlign: "center",
+            }}>
+            <h2
+              style={{
+                fontSize: 36,
+                marginBottom: 40,
+                color: "#2d2d2d",
+                fontFamily: "inherit",
+              }}>
+              <i>Generating your lesson plan...</i>
+            </h2>
+            <div
+              style={{
+                fontSize: 18,
+                color: "#666",
+                fontFamily: "inherit",
+              }}>
+              Please wait while we create your personalized learning path.
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  if (isSubmitted && generatedLessons.length > 0) {
     return (
       <div className="home-container">
         <section className="hero-section">
@@ -51,26 +96,75 @@ const Home = () => {
                 color: "#2d2d2d",
                 fontFamily: "inherit",
               }}>
-              <i>Lessons to be learned...</i>
+              <i>Your personalized lesson plan for "{topic}"</i>
             </h2>
-            <ol
+            <div
               style={{
                 fontSize: 18,
                 lineHeight: 1.8,
                 fontFamily: "inherit",
                 color: "#2d2d2d",
-                paddingLeft: 30,
               }}>
-              {lessonItems.map((lesson, index) => (
-                <li
-                  key={index}
+              {generatedLessons.map((lesson, lessonIndex) => (
+                <div
+                  key={lesson.id || lessonIndex}
                   style={{
-                    marginBottom: 24,
+                    marginBottom: 40,
+                    padding: "24px",
+                    border: "1px solid #e0e0e0",
+                    borderRadius: "12px",
+                    backgroundColor: "#fafafa",
                   }}>
-                  {lesson}
-                </li>
+                  <h3
+                    style={{
+                      fontSize: 24,
+                      marginBottom: 12,
+                      color: "#2d2d2d",
+                      fontFamily: "inherit",
+                    }}>
+                    {lesson.lesson_order}. {lesson.name}
+                  </h3>
+                  <p
+                    style={{
+                      fontSize: 16,
+                      marginBottom: 20,
+                      color: "#666",
+                      fontFamily: "inherit",
+                      fontStyle: "italic",
+                    }}>
+                    {lesson.description}
+                  </p>
+                  <ol
+                    style={{
+                      fontSize: 16,
+                      lineHeight: 1.6,
+                      fontFamily: "inherit",
+                      color: "#2d2d2d",
+                      paddingLeft: 20,
+                    }}>
+                    {lesson.steps && lesson.steps.map((step, stepIndex) => (
+                      <li
+                        key={step.id || stepIndex}
+                        style={{
+                          marginBottom: 12,
+                        }}>
+                        <strong>{step.name}</strong>
+                        <br />
+                        <span style={{ color: "#666" }}>{step.description}</span>
+                        {step.finish_criteria && (
+                          <>
+                            <br />
+                            <span style={{ color: "#888", fontSize: "14px" }}>
+                              <em>Goal: {step.finish_criteria}</em>
+                            </span>
+                          </>
+                        )}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
               ))}
-            </ol>
+            </div>
           </div>
         </section>
 
@@ -85,7 +179,38 @@ const Home = () => {
             zIndex: 1000,
             display: "flex",
             justifyContent: "center",
+            gap: "16px",
           }}>
+          <button
+            onClick={() => {
+              setIsSubmitted(false);
+              setGeneratedLessons([]);
+              setTopic("");
+              setError(null);
+            }}
+            style={{
+              height: 72,
+              padding: "0 40px",
+              borderRadius: 40,
+              border: "1.5px solid #3b82f6",
+              background: "transparent",
+              color: "#3b82f6",
+              fontWeight: 600,
+              fontSize: 20,
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontFamily: "inherit",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = "#3b82f6";
+              e.target.style.color = "#ffffff";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = "transparent";
+              e.target.style.color = "#3b82f6";
+            }}>
+            New Topic
+          </button>
           <button
             onClick={handleTriggerChildProcess}
             style={{
@@ -144,9 +269,30 @@ const Home = () => {
             margin: "0 auto",
             position: "relative",
           }}>
+          {error && (
+            <div
+              style={{
+                position: "absolute",
+                bottom: "100%",
+                left: 0,
+                right: 0,
+                marginBottom: "12px",
+                padding: "12px 20px",
+                backgroundColor: "#fee2e2",
+                border: "1px solid #fecaca",
+                borderRadius: "8px",
+                color: "#dc2626",
+                fontSize: "14px",
+                textAlign: "center",
+              }}>
+              {error}
+            </div>
+          )}
           <input
             type="text"
             placeholder="Ask anything"
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
             style={{
               width: "100%",
               height: 144,
@@ -170,6 +316,7 @@ const Home = () => {
           />
           <button
             onClick={handleSubmit}
+            disabled={isLoading}
             style={{
               position: "absolute",
               right: 16,
@@ -179,11 +326,11 @@ const Home = () => {
               width: 112,
               borderRadius: "50%",
               border: "none",
-              background: "#3b82f6",
+              background: isLoading ? "#9ca3af" : "#3b82f6",
               color: "#ffffff",
               fontWeight: 600,
               fontSize: 24,
-              cursor: "pointer",
+              cursor: isLoading ? "not-allowed" : "pointer",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -192,14 +339,18 @@ const Home = () => {
               fontFamily: "inherit",
             }}
             onMouseEnter={(e) => {
-              e.target.style.background = "#2563eb";
-              e.target.style.transform = "translateY(-50%) scale(1.05)";
+              if (!isLoading) {
+                e.target.style.background = "#2563eb";
+                e.target.style.transform = "translateY(-50%) scale(1.05)";
+              }
             }}
             onMouseLeave={(e) => {
-              e.target.style.background = "#3b82f6";
-              e.target.style.transform = "translateY(-50%) scale(1)";
+              if (!isLoading) {
+                e.target.style.background = "#3b82f6";
+                e.target.style.transform = "translateY(-50%) scale(1)";
+              }
             }}>
-            →
+            {isLoading ? "..." : "→"}
           </button>
         </div>
       </div>

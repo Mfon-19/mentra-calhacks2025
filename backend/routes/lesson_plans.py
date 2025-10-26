@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from flask import Blueprint, jsonify, request
 
 from lesson_generator import generate_full_course
+from tools.bright_data_tool import scrape_to_txt
 from upload_to_supabase_simple import upload_course_to_supabase
 
 load_dotenv()
@@ -30,11 +31,12 @@ def generateLessonPlan():
     try:
         data = request.get_json()
         lesson_topic = data.get('topic')
+        print(lesson_topic)
         
         if not lesson_topic:
             return jsonify({"error": "No data provided"}), 400
         
-        # scrape_to_txt(lesson_topic)
+        scrape_to_txt(lesson_topic)
         generate_full_course()
         upload_course_to_supabase()
 
