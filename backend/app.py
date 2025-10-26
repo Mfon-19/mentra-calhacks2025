@@ -6,7 +6,7 @@ from datetime import datetime
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit, join_room
-from utils.learning_agent import analyze_screenshot
+from utils.learning_agent import analyze_screenshot, handle_screenshot_event
 
 # Add the backend directory to Python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -76,6 +76,47 @@ def health():
         "status": "healthy",
         "service": "calhacks2025-backend"
     })
+
+@app.route('/api/screenshot-event', methods=['POST'])
+def screenshot_event():
+    """
+    Process screenshot event with learning agent flow.
+    Returns completed: true or false
+    
+    Expected JSON payload:
+    {
+        "user_id": "user123",
+        "lesson_id": 1,
+        "step_order": 1,
+        "image": "base64_image_data"
+    }
+    """
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({"status": "error", "message": "No data provided"}), 400
+        
+        required_fields = ['user_id', 'lesson_id', 'step_order', 'image']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({"status": "error", "message": f"Missing field: {field}"}), 400
+        
+        user_id = data['user_id']
+        lesson_id = int(data['lesson_id'])
+        step_order = int(data['step_order'])
+        base64_image = data['image']
+        
+        # Call handle_screenshot_event which returns completion_result
+        result = handle_screenshot_event(user_id, lesson_id, step_order, base64_image)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Internal error: {str(e)}"
+        }), 500
 
 # WebSocket API endpoint for sending popup messages
 @app.route('/api/send-popup', methods=['POST'])

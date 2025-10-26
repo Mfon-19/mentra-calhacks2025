@@ -72,20 +72,22 @@ def handle_screenshot_event(user_id: str, lesson_id: int, step_order: int, base6
 
         # Otherwise, check completion using this latest screenshot
         completion_result = analyze_screenshot(base64_image, finish_criteria, lesson_id)
-        if completion_result.strip().upper() == "YES":
+        is_completed = completion_result.strip().upper() == "YES"
+        
+        if is_completed:
             next_step_order = step_order + 1
             if next_step_order in lesson_data:
                 # Advance to next step; reset popup flag
                 state["step_order"] = next_step_order
                 state["popup_sent_for_step"] = False
-                return {"status": "step_advanced", "next_step_order": next_step_order}
+                return {"status": "step_advanced", "next_step_order": next_step_order, "completed": True}
             else:
                 # Lesson complete
                 user_state.pop(user_id, None)
-                return {"status": "lesson_completed", "message": f"Lesson {lesson_id} completed."}
+                return {"status": "lesson_completed", "message": f"Lesson {lesson_id} completed.", "completed": True}
 
         # Not completed; wait for another screenshot
-        return {"status": "not_completed", "step_order": step_order}
+        return {"status": "not_completed", "step_order": step_order, "completed": False}
     except Exception as e:
         logger.error(f"Error in handle_screenshot_event: {e}")
         return {"status": "error", "message": f"Internal error: {str(e)}"}
