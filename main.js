@@ -241,16 +241,16 @@ function createWindow() {
 app.whenReady().then(() => {
   createWindow();
 
-  // Register global shortcut for '/' key
-  // Toggle behavior: creates overlay if none exists, closes it if it exists
-  const ret = globalShortcut.register("/", () => {
-    console.log('Global shortcut "/" pressed');
-    triggerOverlayScreen();
-  });
+  // // Register global shortcut for '/' key
+  // // Toggle behavior: creates overlay if none exists, closes it if it exists
+  // const ret = globalShortcut.register("/", () => {
+  //   console.log('Global shortcut "/" pressed');
+  //   triggerOverlayScreen();
+  // });
 
-  if (!ret) {
-    console.log('Registration of global shortcut "/" failed');
-  }
+  // if (!ret) {
+  //   console.log('Registration of global shortcut "/" failed');
+  // }
 
   // Start mouse monitoring automatically
   startMouseMonitoring();

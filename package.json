@@ -33,9 +33,10 @@
   "author": "Your Name",
   "license": "MIT",
   "dependencies": {
+    "@supabase/supabase-js": "^2.76.1",
     "electron": "^27.0.0",
-    "react-icons": "^5.5.0",
-    "mac-mouse-hook": "file:./packages/mac_mouse_hook"
+    "mac-mouse-hook": "file:./packages/mac_mouse_hook",
+    "react-icons": "^5.5.0"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
