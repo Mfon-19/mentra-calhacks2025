@@ -8,7 +8,7 @@ const {
 } = require("electron");
 const path = require("path");
 const { spawn } = require("child_process");
-const mouseHook = require('mac-mouse-hook');
+const mouseHook = require("mac-mouse-hook");
 
 let mainWindow;
 let overlayWindow = null; // Track the overlay window
@@ -32,17 +32,17 @@ function triggerOverlayScreen() {
 
   // Create a new overlay window - independent from main window
   overlayWindow = new BrowserWindow({
-    width: 500,
-    height: 200,
+    width: 400,
+    height: 175,
     minWidth: 200,
     minHeight: 150,
-    backgroundColor: "#f5f5f0",
+    // backgroundColor: "#00000000", // Fully transparent if needed
     // Remove parent property to make it independent
     // parent: mainWindow, // Removed - now independent
     // modal: false, // Not needed for independent window
     alwaysOnTop: true, // Keep it above other windows
-    frame: true, // Keep frame for now, can be set to false for frameless
-    // transparent: true, // Uncomment for transparent effect
+    frame: false, // Frameless window required for transparency on macOS
+    transparent: true, // Enable window transparency
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -122,25 +122,31 @@ function triggerOverlayScreen() {
 // Mouse hook functions
 function startMouseMonitoring() {
   if (isMouseHookActive) {
-    console.log('Mouse hook already active');
+    console.log("Mouse hook already active");
     return;
   }
 
   try {
     mouseHook.start((event) => {
       // Print coordinates and timestamp
-      console.log(`Mouse click: x=${event.x}, y=${event.y}, timestamp=${new Date().toISOString()}`);
-      
+      console.log(
+        `Mouse click: x=${event.x}, y=${
+          event.y
+        }, timestamp=${new Date().toISOString()}`
+      );
+
       // Trigger action on every click
       triggerDebugAction(event);
     });
 
     isMouseHookActive = true;
   } catch (error) {
-    console.error('Failed to start mouse hook:', error.message);
-    
-    if (error.message.includes('Accessibility permissions')) {
-      console.log('Please enable accessibility permissions in System Preferences > Security & Privacy > Privacy > Accessibility');
+    console.error("Failed to start mouse hook:", error.message);
+
+    if (error.message.includes("Accessibility permissions")) {
+      console.log(
+        "Please enable accessibility permissions in System Preferences > Security & Privacy > Privacy > Accessibility"
+      );
     }
   }
 }
@@ -154,28 +160,32 @@ function stopMouseMonitoring() {
     mouseHook.stop();
     isMouseHookActive = false;
   } catch (error) {
-    console.error('Failed to stop mouse hook:', error.message);
+    console.error("Failed to stop mouse hook:", error.message);
   }
 }
 
 function triggerDebugAction(lastEvent) {
-  console.log(`Action triggered: x=${lastEvent.x}, y=${lastEvent.y}, timestamp=${new Date().toISOString()}`);
-  
+  console.log(
+    `Action triggered: x=${lastEvent.x}, y=${
+      lastEvent.y
+    }, timestamp=${new Date().toISOString()}`
+  );
+
   // Send debug message to main window if it exists
   if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send('mouse-hook-debug', {
-      action: 'click-detected',
+    mainWindow.webContents.send("mouse-hook-debug", {
+      action: "click-detected",
       clickData: lastEvent,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
-  
+
   // Send debug message to overlay window if it exists
   if (overlayWindow && !overlayWindow.isDestroyed()) {
-    overlayWindow.webContents.send('mouse-hook-debug', {
-      action: 'click-detected',
+    overlayWindow.webContents.send("mouse-hook-debug", {
+      action: "click-detected",
       clickData: lastEvent,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 }
@@ -276,7 +286,7 @@ app.on("before-quit", () => {
   if (isMouseHookActive) {
     stopMouseMonitoring();
   }
-  
+
   // Close overlay window if it exists
   if (overlayWindow && !overlayWindow.isDestroyed()) {
     overlayWindow.close();
@@ -363,8 +373,8 @@ ipcMain.handle("stop-mouse-monitoring", () => {
 });
 
 ipcMain.handle("get-mouse-hook-status", () => {
-  return { 
-    active: isMouseHookActive
+  return {
+    active: isMouseHookActive,
   };
 });
 
