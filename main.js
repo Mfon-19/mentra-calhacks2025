@@ -1,9 +1,184 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
-const path = require('path');
-const BackendManager = require('./scripts/start-backend');
+const {
+  app,
+  BrowserWindow,
+  ipcMain,
+  globalShortcut,
+  desktopCapturer,
+  screen,
+} = require("electron");
+const path = require("path");
+const { spawn } = require("child_process");
+const mouseHook = require('mac-mouse-hook');
 
 let mainWindow;
-let backendManager;
+let overlayWindow = null; // Track the overlay window
+
+// Mouse hook state
+let isMouseHookActive = false;
+
+// Overlay screen function triggered by '/' key - creates a new Electron window
+function triggerOverlayScreen() {
+  // Check if overlay window already exists
+  if (overlayWindow && !overlayWindow.isDestroyed()) {
+    console.log("Overlay window already exists - closing it");
+    overlayWindow.close();
+    overlayWindow = null;
+    return null;
+  }
+
+  console.log(
+    'Overlay screen triggered by "/" key press - creating new window'
+  );
+
+  // Create a new overlay window - independent from main window
+  overlayWindow = new BrowserWindow({
+    width: 500,
+    height: 200,
+    minWidth: 200,
+    minHeight: 150,
+    backgroundColor: "#f5f5f0",
+    // Remove parent property to make it independent
+    // parent: mainWindow, // Removed - now independent
+    // modal: false, // Not needed for independent window
+    alwaysOnTop: true, // Keep it above other windows
+    frame: true, // Keep frame for now, can be set to false for frameless
+    // transparent: true, // Uncomment for transparent effect
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, "preload.js"),
+      webSecurity: false,
+    },
+    title: "Overlay Screen",
+    show: false, // Don't show until ready
+    x: 100, // Position on desktop
+    y: 100,
+  });
+
+  // Load content for the overlay window
+  const isDev = !app.isPackaged;
+
+  if (isDev) {
+    // In development, try dev server first; fallback to built files if it fails
+    overlayWindow.loadURL("http://localhost:3001").catch(() => {
+      console.log(
+        "Overlay dev server not available; falling back to built files"
+      );
+      overlayWindow.loadFile(
+        path.join(__dirname, "overlay-screen/public/index.html")
+      );
+    });
+
+    // Also handle async load failures
+    overlayWindow.webContents.on(
+      "did-fail-load",
+      (_event, _errorCode, _errorDescription, validatedURL) => {
+        if (validatedURL && validatedURL.startsWith("http://localhost:3001")) {
+          console.log(
+            "Overlay failed to load dev server; loading built files instead"
+          );
+          overlayWindow.loadFile(
+            path.join(__dirname, "overlay-screen/public/index.html")
+          );
+        }
+      }
+    );
+  } else {
+    // In production, load the built React app
+    overlayWindow.loadFile(
+      path.join(__dirname, "overlay-screen/public/index.html")
+    );
+  }
+
+  // Show and initialize after content is fully loaded
+  overlayWindow.webContents.once("did-finish-load", () => {
+    overlayWindow.show();
+    console.log("Overlay window opened");
+
+    // Send initial content to overlay renderer
+    overlayWindow.webContents.send("overlay-set-content", {
+      header: "Step 1",
+      body: "Using prototyping features to connect frames, add interactions, and create clickable mockups that simulate user flows.",
+    });
+  });
+
+  // Handle overlay window closed
+  overlayWindow.on("closed", () => {
+    console.log("Overlay window closed");
+    overlayWindow = null; // Reset the reference when closed
+  });
+
+  // Send message to main window that overlay was created
+  if (mainWindow) {
+    mainWindow.webContents.send(
+      "child-process-output",
+      "Overlay window created"
+    );
+  }
+
+  return overlayWindow;
+}
+
+// Mouse hook functions
+function startMouseMonitoring() {
+  if (isMouseHookActive) {
+    console.log('Mouse hook already active');
+    return;
+  }
+
+  try {
+    mouseHook.start((event) => {
+      // Print coordinates and timestamp
+      console.log(`Mouse click: x=${event.x}, y=${event.y}, timestamp=${new Date().toISOString()}`);
+      
+      // Trigger action on every click
+      triggerDebugAction(event);
+    });
+
+    isMouseHookActive = true;
+  } catch (error) {
+    console.error('Failed to start mouse hook:', error.message);
+    
+    if (error.message.includes('Accessibility permissions')) {
+      console.log('Please enable accessibility permissions in System Preferences > Security & Privacy > Privacy > Accessibility');
+    }
+  }
+}
+
+function stopMouseMonitoring() {
+  if (!isMouseHookActive) {
+    return;
+  }
+
+  try {
+    mouseHook.stop();
+    isMouseHookActive = false;
+  } catch (error) {
+    console.error('Failed to stop mouse hook:', error.message);
+  }
+}
+
+function triggerDebugAction(lastEvent) {
+  console.log(`Action triggered: x=${lastEvent.x}, y=${lastEvent.y}, timestamp=${new Date().toISOString()}`);
+  
+  // Send debug message to main window if it exists
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('mouse-hook-debug', {
+      action: 'click-detected',
+      clickData: lastEvent,
+      timestamp: new Date().toISOString()
+    });
+  }
+  
+  // Send debug message to overlay window if it exists
+  if (overlayWindow && !overlayWindow.isDestroyed()) {
+    overlayWindow.webContents.send('mouse-hook-debug', {
+      action: 'click-detected',
+      clickData: lastEvent,
+      timestamp: new Date().toISOString()
+    });
+  }
+}
 
 function createWindow() {
   // Create the browser window
@@ -15,47 +190,40 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js'),
-      webSecurity: false // Allow localhost requests
+      preload: path.join(__dirname, "preload.js"),
+      webSecurity: false, // Allow localhost requests
     },
-    icon: path.join(__dirname, 'assets/icon.png'), // Optional: add an icon
-    show: false // Don't show until ready
+    icon: path.join(__dirname, "assets/icon.png"), // Optional: add an icon
+    show: false, // Don't show until ready
   });
 
-  // Start the Flask backend
-  backendManager = new BackendManager();
-  backendManager.start();
+  // Backend is managed externally; no backend process started here
 
   // Load the React app
-  const isDev = process.env.NODE_ENV === 'development';
-  
+  const isDev = !app.isPackaged;
+
   if (isDev) {
     // In development, load from React dev server
-    mainWindow.loadURL('http://localhost:3000');
+    mainWindow.loadURL("http://localhost:3000");
   } else {
     // In production, load from built React app
-    mainWindow.loadFile(path.join(__dirname, 'frontend/build/index.html'));
+    mainWindow.loadFile(path.join(__dirname, "frontend/public/index.html"));
   }
 
   // Show window when ready
-  mainWindow.once('ready-to-show', () => {
+  mainWindow.once("ready-to-show", () => {
     mainWindow.show();
-    
-    // Open DevTools in development
-    if (isDev) {
-      mainWindow.webContents.openDevTools();
-    }
   });
 
   // Handle window closed
-  mainWindow.on('closed', () => {
+  mainWindow.on("closed", () => {
     mainWindow = null;
   });
 
   // Handle external links
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    require('electron').shell.openExternal(url);
-    return { action: 'deny' };
+    require("electron").shell.openExternal(url);
+    return { action: "deny" };
   });
 }
 
@@ -63,7 +231,21 @@ function createWindow() {
 app.whenReady().then(() => {
   createWindow();
 
-  app.on('activate', () => {
+  // Register global shortcut for '/' key
+  // Toggle behavior: creates overlay if none exists, closes it if it exists
+  const ret = globalShortcut.register("/", () => {
+    console.log('Global shortcut "/" pressed');
+    triggerOverlayScreen();
+  });
+
+  if (!ret) {
+    console.log('Registration of global shortcut "/" failed');
+  }
+
+  // Start mouse monitoring automatically
+  startMouseMonitoring();
+
+  app.on("activate", () => {
     // On macOS, re-create window when dock icon is clicked
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
@@ -72,41 +254,122 @@ app.whenReady().then(() => {
 });
 
 // Quit when all windows are closed
-app.on('window-all-closed', () => {
-  // Stop the backend when app is closing
-  if (backendManager) {
-    backendManager.stop();
+app.on("window-all-closed", () => {
+  // Close overlay window if it exists
+  if (overlayWindow && !overlayWindow.isDestroyed()) {
+    overlayWindow.close();
+    overlayWindow = null;
   }
-  
+
+  // Unregister all global shortcuts
+  globalShortcut.unregisterAll();
+
   // On macOS, keep app running even when all windows are closed
-  if (process.platform !== 'darwin') {
+  if (process.platform !== "darwin") {
     app.quit();
   }
 });
 
+// Handle app before quit to ensure proper cleanup
+app.on("before-quit", () => {
+  // Stop mouse monitoring
+  if (isMouseHookActive) {
+    stopMouseMonitoring();
+  }
+  
+  // Close overlay window if it exists
+  if (overlayWindow && !overlayWindow.isDestroyed()) {
+    overlayWindow.close();
+    overlayWindow = null;
+  }
+});
+
 // Security: Prevent new window creation
-app.on('web-contents-created', (event, contents) => {
-  contents.on('new-window', (event, navigationUrl) => {
+app.on("web-contents-created", (event, contents) => {
+  contents.on("new-window", (event, navigationUrl) => {
     event.preventDefault();
-    require('electron').shell.openExternal(navigationUrl);
+    require("electron").shell.openExternal(navigationUrl);
   });
 });
 
 // IPC handlers for communication with renderer process
-ipcMain.handle('get-backend-status', () => {
-  return backendManager ? backendManager.getStatus() : { isRunning: false };
+ipcMain.handle("get-backend-status", () => ({ isRunning: false }));
+
+ipcMain.handle("restart-backend", () => ({ success: false }));
+
+// IPC handler to trigger overlay screen from renderer
+ipcMain.handle("trigger-child-process", () => {
+  try {
+    const process = triggerOverlayScreen();
+    return {
+      success: true,
+      pid: process ? process.pid : null,
+      action: overlayWindow ? "opened" : "closed",
+    };
+  } catch (error) {
+    console.error("Error triggering overlay screen:", error);
+    return { success: false, error: error.message };
+  }
 });
 
-ipcMain.handle('restart-backend', () => {
-  if (backendManager) {
-    backendManager.restart();
-    return { success: true };
+// IPC handler for taking screenshots
+ipcMain.handle("take-screenshot", async () => {
+  try {
+    const sources = await desktopCapturer.getSources({
+      types: ["screen"],
+      thumbnailSize: { width: 1920, height: 1080 },
+    });
+
+    if (sources.length === 0) {
+      throw new Error("No screen sources available");
+    }
+
+    // Get the primary display
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const source =
+      sources.find(
+        (source) =>
+          source.name === "Entire Screen" || source.name === "Screen 1"
+      ) || sources[0];
+
+    // Convert to base64
+    const screenshot = source.thumbnail.toPNG();
+    const base64Image = screenshot.toString("base64");
+
+    return {
+      success: true,
+      data: base64Image,
+      size: screenshot.length,
+      display: {
+        width: primaryDisplay.bounds.width,
+        height: primaryDisplay.bounds.height,
+      },
+    };
+  } catch (error) {
+    console.error("Error taking screenshot:", error);
+    return { success: false, error: error.message };
   }
-  return { success: false };
+});
+
+// Mouse hook IPC handlers
+ipcMain.handle("start-mouse-monitoring", () => {
+  startMouseMonitoring();
+  return { success: true, active: isMouseHookActive };
+});
+
+ipcMain.handle("stop-mouse-monitoring", () => {
+  stopMouseMonitoring();
+  return { success: true, active: isMouseHookActive };
+});
+
+ipcMain.handle("get-mouse-hook-status", () => {
+  return { 
+    active: isMouseHookActive
+  };
 });
 
 // Handle app activation (macOS)
-app.on('activate', () => {
+app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
