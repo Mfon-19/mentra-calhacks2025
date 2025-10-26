@@ -116,11 +116,17 @@ Using the Figma documentation below, create 5-7 specific, actionable steps for t
 - Reference specific Figma features from the documentation
 - Be beginner-friendly with clear instructions
 - Build upon previous steps
+- Include a concrete, visual completion criteria
 
 Figma Documentation:
 {scraped_content[:15000]}
 
-Return a JSON array: [{{"step": 1, "title": "...", "instruction": "...", "figma_feature": "..."}}]"""
+Return ONLY a valid JSON array with this exact format (no additional text before or after):
+[{{"step": 1, "title": "...", "instruction": "...", "figma_feature": "...", "finished_criteria": "Concrete visual indicator like 'A blue rectangle appears on the canvas' or 'The layers panel shows a new frame named Frame 1'"}}]
+
+IMPORTANT: 
+- The finished_criteria should describe what the user will SEE on screen when the step is complete
+- Return ONLY the JSON array, no explanations or markdown formatting"""
         }
     ]
     
@@ -131,15 +137,23 @@ Return a JSON array: [{{"step": 1, "title": "...", "instruction": "...", "figma_
     
     # Parse the JSON
     try:
+        # Remove markdown code blocks
         if '```json' in content:
             content = content.split('```json')[1].split('```')[0].strip()
         elif '```' in content:
             content = content.split('```')[1].split('```')[0].strip()
         
+        # Remove any text before the first [ and after the last ]
+        start_idx = content.find('[')
+        end_idx = content.rfind(']')
+        if start_idx != -1 and end_idx != -1:
+            content = content[start_idx:end_idx+1]
+        
         steps = json.loads(content)
         return steps
-    except json.JSONDecodeError:
-        print("Warning: Could not parse chapter content as JSON.")
+    except json.JSONDecodeError as e:
+        print(f"Warning: Could not parse chapter content as JSON: {e}")
+        print(f"Content preview: {content[:200]}...")
         return None
 
 def generate_full_course():

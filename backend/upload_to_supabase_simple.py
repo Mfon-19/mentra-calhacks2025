@@ -57,7 +57,9 @@ def upload_course_to_supabase():
                         'lesson_id': lesson_id,
                         'name': step.get('title', ''),
                         'description': step.get('instruction', ''),
-                        'step_order': step.get('step', 1)
+                        'step_order': step.get('step', 1),
+                        'finish_criteria': step.get('finished_criteria', '')
+
                     }
                     steps_to_insert.append(step_insert)
                 
