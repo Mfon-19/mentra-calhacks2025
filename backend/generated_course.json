@@ -1,0 +1,247 @@
+[
+  {
+    "chapter": 1,
+    "title": "Introduction to Figma",
+    "description": "This chapter covers the basics of Figma, its interface, and how to create a new project, including setting up a new file, understanding the toolbar, and navigating the dashboard.",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Setting up a Figma Account",
+        "instruction": "Go to www.figma.com, click 'Get started', enter your details, and complete a quick verification activity to create a Figma account.",
+        "figma_feature": "Figma Account Setup"
+      },
+      {
+        "step": 2,
+        "title": "Navigating the Figma Interface",
+        "instruction": "Explore the Figma interface by clicking on the different menus and tools, such as the 'File' menu, 'Edit' menu, and 'Toolbar' to get familiar with the layout.",
+        "figma_feature": "Figma Interface"
+      },
+      {
+        "step": 3,
+        "title": "Creating a New File",
+        "instruction": "Click on the 'File' menu and select 'New File' to create a new Figma file, then choose a template or start from scratch.",
+        "figma_feature": "New File Creation"
+      },
+      {
+        "step": 4,
+        "title": "Understanding the Toolbar",
+        "instruction": "Familiarize yourself with the Figma toolbar, which includes tools such as the 'Rectangle' tool, 'Text' tool, and 'Frame' tool, and learn how to access them.",
+        "figma_feature": "Figma Toolbar"
+      },
+      {
+        "step": 5,
+        "title": "Enabling Rulers and Guides",
+        "instruction": "Enable rulers by going to the 'View' menu and selecting 'Rulers', then create a new guide by clicking and dragging on the horizontal or vertical ruler.",
+        "figma_feature": "Rulers and Guides"
+      },
+      {
+        "step": 6,
+        "title": "Creating Frames and Layers",
+        "instruction": "Use the 'Frame' tool to create a new frame, then add layers such as rectangles and text to the frame using the corresponding tools.",
+        "figma_feature": "Frames and Layers"
+      },
+      {
+        "step": 7,
+        "title": "Arranging and Aligning Objects",
+        "instruction": "Use the 'Arrange' and 'Align' commands to organize and align the objects in your frame, and learn how to use the keyboard shortcuts to speed up the process.",
+        "figma_feature": "Arrange and Align Commands"
+      }
+    ]
+  },
+  {
+    "chapter": 2,
+    "title": "Designing with Figma",
+    "description": "In this chapter, students will learn the fundamentals of designing with Figma, including working with frames, creating and editing shapes, and using the pen tool to create custom designs.",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Create a New Frame",
+        "instruction": "To start designing, create a new frame by going to the toolbar and selecting the 'Frame' tool. Click and drag on the canvas to create a new frame. This will be the foundation of your design.",
+        "figma_feature": "Frames"
+      },
+      {
+        "step": 2,
+        "title": "Add Guides to the Canvas",
+        "instruction": "Enable rulers on the canvas by going to the Main menu, hovering over 'View', and selecting 'Rulers'. Then, create a new guide by clicking and dragging on the horizontal or vertical ruler. This will help you precisely position layers and objects in your design.",
+        "figma_feature": "Guides"
+      },
+      {
+        "step": 3,
+        "title": "Draw a Shape using the Pen Tool",
+        "instruction": "Select the 'Pen' tool from the toolbar and start drawing a shape on the canvas. You can use the 'Vector networks' feature to create custom shapes and edit vector layers.",
+        "figma_feature": "Pen Tool"
+      },
+      {
+        "step": 4,
+        "title": "Edit and Arrange Layers",
+        "instruction": "Use the 'Layers' panel to select and edit layers. You can also use the 'Arrange' and 'Align' commands to position and align objects in your design.",
+        "figma_feature": "Layers"
+      },
+      {
+        "step": 5,
+        "title": "Add Text and Typography",
+        "instruction": "Use the 'Text' tool to add text to your design. You can also explore the 'Text properties' and 'Typography' features to customize the font, size, and style of your text.",
+        "figma_feature": "Text and Typography"
+      },
+      {
+        "step": 6,
+        "title": "Use Auto Layout and Grids",
+        "instruction": "Use the 'Auto layout' feature to create responsive designs that adapt to different screen sizes. You can also use 'Grids' to create a layout grid and position objects in your design.",
+        "figma_feature": "Auto Layout and Grids"
+      },
+      {
+        "step": 7,
+        "title": "Save and Share Your Design",
+        "instruction": "Save your design by going to the 'File' menu and selecting 'Save'. You can also share your design with others by clicking on the 'Share' button and sending a link to your design file.",
+        "figma_feature": "File Management and Sharing"
+      }
+    ]
+  },
+  {
+    "chapter": 3,
+    "title": "Working with Text and Images",
+    "description": "This chapter focuses on adding and editing text, importing and manipulating images, and using other media elements in Figma to enhance designs and create engaging visual content.",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Adding Text to Your Design",
+        "instruction": "To add text to your design, click on the Text tool in the toolbar and select the area where you want to add the text. You can then type in your text and adjust the font, size, and color using the text properties panel.",
+        "figma_feature": "Text tool, text properties panel"
+      },
+      {
+        "step": 2,
+        "title": "Creating and Applying Text Styles",
+        "instruction": "To create a text style, select the text you want to style and click on the 'Create text style' button in the text properties panel. You can then apply this style to other text elements in your design by selecting them and clicking on the style in the styles panel.",
+        "figma_feature": "Text styles, styles panel"
+      },
+      {
+        "step": 3,
+        "title": "Importing Images to Your Design",
+        "instruction": "To import an image, click on the 'Import' button in the toolbar and select the image file you want to import. You can then drag and drop the image onto your design canvas.",
+        "figma_feature": "Import button, image import"
+      },
+      {
+        "step": 4,
+        "title": "Resizing and Cropping Images",
+        "instruction": "To resize an image, select it and use the resize handles to adjust its size. To crop an image, select it and use the crop tool to trim it to the desired size.",
+        "figma_feature": "Resize handles, crop tool"
+      },
+      {
+        "step": 5,
+        "title": "Using Guides to Position Text and Images",
+        "instruction": "To add a guide, click and drag on the horizontal or vertical ruler to pull the guide onto the canvas. You can then use the guide to position your text and images precisely.",
+        "figma_feature": "Guides, rulers"
+      },
+      {
+        "step": 6,
+        "title": "Aligning Text and Images Using Auto Layout",
+        "instruction": "To use auto layout, select the text and images you want to align and click on the 'Auto layout' button in the toolbar. You can then adjust the alignment and spacing of the elements using the auto layout panel.",
+        "figma_feature": "Auto layout, auto layout panel"
+      },
+      {
+        "step": 7,
+        "title": "Adjusting Layer Properties for Text and Images",
+        "instruction": "To adjust the layer properties of text and images, select them and use the layer properties panel to adjust their opacity, blend mode, and other properties.",
+        "figma_feature": "Layer properties panel, layer properties"
+      }
+    ]
+  },
+  {
+    "chapter": 4,
+    "title": "Prototyping and Interaction Design",
+    "description": "Students will learn how to create interactive prototypes in Figma, including adding links, creating micro-interactions, and testing designs to improve user experience and usability.",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Enable Rulers and Create Guides",
+        "instruction": "To start creating a prototype, enable rulers on the canvas by going to the Main menu, hovering over View, and selecting Rulers. Then, create a new guide by clicking and dragging on the horizontal or vertical ruler to pull the guide onto the canvas.",
+        "figma_feature": "Rulers and Guides"
+      },
+      {
+        "step": 2,
+        "title": "Create a New Frame for Prototyping",
+        "instruction": "Create a new frame by going to the toolbar and selecting the Frame tool. Draw a new frame on the canvas to serve as the base for your prototype.",
+        "figma_feature": "Frames"
+      },
+      {
+        "step": 3,
+        "title": "Add Layers and Objects to the Frame",
+        "instruction": "Add layers and objects to the frame, such as text, shapes, and images, to create the content for your prototype. Use the Arrange and Align commands to position and align the objects.",
+        "figma_feature": "Layers and Objects"
+      },
+      {
+        "step": 4,
+        "title": "Create a Prototype Connection",
+        "instruction": "To create a prototype connection, go to the Prototype tab in the right sidebar and click on the + button. Then, select the frame you want to connect to and choose the interaction trigger, such as a click or hover.",
+        "figma_feature": "Prototype Connections"
+      },
+      {
+        "step": 5,
+        "title": "Add Interactions and Animations",
+        "instruction": "Add interactions and animations to your prototype by using the Interactions and Animations panels in the right sidebar. You can add effects, such as fade or slide, to create a more engaging user experience.",
+        "figma_feature": "Interactions and Animations"
+      },
+      {
+        "step": 6,
+        "title": "Test and Refine the Prototype",
+        "instruction": "Test the prototype by clicking on the Play button in the top right corner of the screen. Refine the prototype by making adjustments to the interactions, animations, and layout as needed.",
+        "figma_feature": "Prototype Testing"
+      },
+      {
+        "step": 7,
+        "title": "Share the Prototype with Others",
+        "instruction": "Share the prototype with others by clicking on the Share button in the top right corner of the screen. You can share a link to the prototype or export it as a video or GIF to present to stakeholders or team members.",
+        "figma_feature": "Sharing and Collaboration"
+      }
+    ]
+  },
+  {
+    "chapter": 5,
+    "title": "Collaboration and Design Systems",
+    "description": "In the final chapter, students will discover how to collaborate with others in Figma, create and manage design systems, and use plugins and other advanced features to streamline their design workflow.",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Enabling Rulers and Creating Guides",
+        "instruction": "To start collaborating and designing systems in Figma, enable rulers by going to the Main menu, hovering over View, and selecting Rulers. Then, create a new guide by clicking and dragging on the horizontal or vertical ruler to pull the guide onto the canvas.",
+        "figma_feature": "Rulers and Guides"
+      },
+      {
+        "step": 2,
+        "title": "Understanding Workspaces in Figma Enterprise",
+        "instruction": "If you're using Figma Enterprise, learn about Workspaces, which allow companies to group teams and members within an organization. This feature helps with collaboration and design system management.",
+        "figma_feature": "Workspaces"
+      },
+      {
+        "step": 3,
+        "title": "Creating and Organizing Variants",
+        "instruction": "Learn how to create and organize Variants in Figma, which help with design system management. Understand when to use variants, how to use them effectively, and tips for organizing your library.",
+        "figma_feature": "Variants"
+      },
+      {
+        "step": 4,
+        "title": "Building Design Systems with Components, Styles, and Shared Libraries",
+        "instruction": "Build design systems using Components, Styles, and Shared Libraries in Figma. Learn how to create and manage styles, components, and variables, and how to apply them to your designs.",
+        "figma_feature": "Components, Styles, and Shared Libraries"
+      },
+      {
+        "step": 5,
+        "title": "Collaborating in Figma with Comments and Multiplayer Tools",
+        "instruction": "Learn how to collaborate with others in Figma using Comments and Multiplayer Tools. Understand how to add comments, view and manage comments, and use cursor chat and other multiplayer features.",
+        "figma_feature": "Comments and Multiplayer Tools"
+      },
+      {
+        "step": 6,
+        "title": "Using Branching and Merging for Version Control",
+        "instruction": "Learn how to use Branching and Merging in Figma for version control. Understand how to create and manage branches, share branches, and get updates from main files.",
+        "figma_feature": "Branching and Merging"
+      },
+      {
+        "step": 7,
+        "title": "Creating and Sharing Libraries for Design System Management",
+        "instruction": "Learn how to create and share libraries in Figma for design system management. Understand how to add descriptions to styles, components, and variables, publish a library, and manage library updates.",
+        "figma_feature": "Libraries"
+      }
+    ]
+  }
+]
