@@ -90,29 +90,7 @@ def handle_screenshot_event(user_id: str, lesson_id: int, step_order: int, base6
         logger.error(f"Error in handle_screenshot_event: {e}")
         return {"status": "error", "message": f"Internal error: {str(e)}"}
 
-# Agent 1: Popup message agent
-POPUP_MESSAGE_PROMPT = """You are a helpful popup message generator. Your job is to create concise, visual instructions that guide users through completing a step by analyzing their current screenshot.
-
-INSTRUCTIONS:
-1. Analyze the provided screenshot showing the user's current state
-2. Take the step_order and step_description as input
-3. Generate a helpful popup message that visually guides the user based on what you see
-4. Focus on actionable, step-by-step visual instructions
-5. Keep messages concise but clear
-6. Use friendly, encouraging tone
-
-OUTPUT FORMAT:
-- Create a short, actionable popup message (2-3 sentences max)
-- Reference specific elements you see in the screenshot (e.g., "Click the blue button", "Look for the green checkmark")
-- Use encouraging language
-- Focus on what the user should see and do next based on their current state
-
-EXAMPLES:
-- "I can see you're on the login page. Look for the 'Submit' button in the bottom right corner and click it to complete this step."
-- "Great! I can see the form is filled out. Find the green checkmark icon next to your name - that means you're all set!"
-- "I notice you're on the homepage. Click on the 'Create Account' button at the top of the page to proceed."""
-
-# Agent 2: Task completion decider
+# Agent: Task completion decider
 SYSTEM_PROMPT = """You are a task completion decider. Your ONLY job is to determine if a user has completed a task by comparing their screenshot against the finish criteria.
 
 INSTRUCTIONS:
@@ -125,17 +103,8 @@ OUTPUT FORMAT:
 - Do not provide explanations, reasoning, or additional text
 - Be precise: only say "YES" if the screenshot exactly matches the finish criteria"""
 
-# Initialize agents with error handling
+# Initialize task completion agent with error handling
 try:
-    popup_message_agent = client.agents.create(
-        name="Popup Message Generator",
-        system=POPUP_MESSAGE_PROMPT,
-        model="openai/gpt-4o",
-        embedding="openai/text-embedding-3-small",
-        tools=[],
-        include_base_tools=False
-    )
-    
     task_completion_agent = client.agents.create(
         name="Task Completion Decider",
         system=SYSTEM_PROMPT,
@@ -144,9 +113,9 @@ try:
         tools=[],
         include_base_tools=False
     )
-    logger.info("Successfully created Lettuce agents")
+    logger.info("Successfully created Lettuce task completion agent")
 except Exception as e:
-    logger.error(f"Failed to create Lettuce agents: {e}")
+    logger.error(f"Failed to create Lettuce task agent: {e}")
     raise
 
 
