@@ -2,7 +2,7 @@ import os
 import sys
 import base64
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from utils.screenshot_analyze import analyze_screenshot
 
@@ -24,11 +24,28 @@ app.register_blueprint(media_bp, url_prefix='/api')
 
 @app.route('/screenshot', methods=['POST'])
 def screenshot():
-    # FOR TESTING
-    img_path = os.path.join(os.path.dirname(__file__), 'utils', 'img.png')
-    with open(img_path, 'rb') as img_file:
-        img_data = img_file.read()
-        base64_image = base64.b64encode(img_data).decode('utf-8')
+    try:
+        # Get the request data
+        data = request.get_json()
+        
+        if not data or 'image' not in data:
+            return jsonify({
+                "message": "No image data provided",
+                "status": "error"
+            }), 400
+        
+        # Extract the base64 image data from the request
+        base64_image = data['image']
+        
+        # Optional: Log metadata if provided
+        if 'metadata' in data:
+            print(f"Screenshot metadata: {data['metadata']}")
+        
+    except Exception as e:
+        return jsonify({
+            "message": f"Error processing request: {str(e)}",
+            "status": "error"
+        }), 400
 
     result = analyze_screenshot(base64_image)
 

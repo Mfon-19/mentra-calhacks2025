@@ -10,6 +10,7 @@ client = Letta(token=os.getenv("LETTA_API_KEY"))
 SYSTEM_PROMPT = "I am a helpful AI assistant that analyzes screenshots and provides detailed, accurate descriptions of what you see. Focus on identifying UI elements, text content, layout, and any notable features or issues in the image."
 
 agent_state = client.agents.create(
+    # model="anthropic/claude-3-5-haiku",
     model="openai/gpt-4.1",
     embedding="openai/text-embedding-3-small",
     memory_blocks=[
