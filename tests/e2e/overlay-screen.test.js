@@ -7,7 +7,10 @@ const { app, BrowserWindow, globalShortcut } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 
-describe('Overlay Screen E2E Tests', () => {
+const runElectronE2E = process.env.RUN_ELECTRON_E2E === 'true';
+const describeIf = runElectronE2E ? describe : describe.skip;
+
+describeIf('Overlay Screen E2E Tests', () => {
   let mainWindow;
   let overlayWindow;
   let backendProcess;

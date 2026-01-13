@@ -32,6 +32,11 @@ const OverlayScreen = () => {
         // Trigger popup for current step
         await startStep();
 
+        if (!screenshotService.isAvailable()) {
+          console.warn("Screenshot capture unavailable; skipping progression loop.");
+          return;
+        }
+
         // Loop: every 10s send screenshot; backend will compare and advance
         while (!stopped) {
           await new Promise((r) => setTimeout(r, 10000));

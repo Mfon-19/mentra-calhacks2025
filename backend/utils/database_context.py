@@ -1,3 +1,4 @@
+import json
 import os
 from typing import Dict, Any, Optional, Tuple
 from dotenv import load_dotenv
@@ -12,7 +13,13 @@ class DatabaseContextProvider:
         # Create Supabase client with SSL handling
         url = os.environ.get("SUPABASE_URL")
         key = os.environ.get("SUPABASE_KEY")
-        
+        self.local_course_data = self._load_local_course_data()
+
+        if not url or not key:
+            print("Warning: SUPABASE_URL or SUPABASE_KEY not set; using local course data")
+            self.sb = None
+            return
+
         try:
             # Try normal connection first
             self.sb = create_client(url, key)
@@ -33,6 +40,37 @@ class DatabaseContextProvider:
                 print(f"Error: Supabase client creation failed completely: {fallback_error}")
                 # Create a mock client for testing/fallback
                 self.sb = None
+
+    def _load_local_course_data(self):
+        course_path = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..", "generated_course.json")
+        )
+        try:
+            with open(course_path, "r", encoding="utf-8") as handle:
+                return json.load(handle)
+        except Exception as error:
+            print(f"Warning: failed to load local course data: {error}")
+            return []
+
+    def _get_local_lesson_steps(self, lesson_id: int) -> Dict[int, Dict[str, str]]:
+        if not self.local_course_data:
+            return {}
+
+        for lesson in self.local_course_data:
+            if lesson.get("chapter") == lesson_id:
+                steps = {}
+                for step in lesson.get("steps", []):
+                    step_order = step.get("step")
+                    if step_order is None:
+                        continue
+                    steps[step_order] = {
+                        "name": step.get("title") or f"Step {step_order}",
+                        "description": step.get("instruction") or "",
+                        "finish_criteria": step.get("finished_criteria")
+                        or f"Step {step_order} completion criteria",
+                    }
+                return steps
+        return {}
     
     def get_user_context(self, user_id: str) -> Dict[str, Any]:
         """Retrieve user-specific context from database."""
@@ -95,7 +133,7 @@ class DatabaseContextProvider:
         """
         try:
             if self.sb is None:
-                return {}
+                return self._get_local_lesson_steps(lesson_id)
             resp = (
                 self.sb
                 .table("step")
@@ -116,11 +154,13 @@ class DatabaseContextProvider:
                     "description": description,
                     "finish_criteria": finish_criteria if finish_criteria else f"Step {step_order} completion criteria",
                 }
-            print(f"Loaded {len(lesson_data)} steps for lesson {lesson_id}")
-            return lesson_data
+            if lesson_data:
+                print(f"Loaded {len(lesson_data)} steps for lesson {lesson_id}")
+                return lesson_data
+            return self._get_local_lesson_steps(lesson_id)
         except Exception as e:
             print(f"Error loading lesson steps for lesson {lesson_id}: {e}")
-            return {}
+            return self._get_local_lesson_steps(lesson_id)
     
     def get_step_by_order_and_lesson(self, step_order: int, lesson_id: int) -> Tuple[str, str]:
         """

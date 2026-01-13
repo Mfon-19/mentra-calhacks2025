@@ -5,7 +5,7 @@ from typing import Dict, Optional, Union
 from datetime import datetime
 
 from dotenv import load_dotenv
-from letta_client import Letta, MessageCreate, TextContent, ImageContent
+import letta_client
 from .database_context import db_context
 
 # Configure logging
@@ -14,14 +14,19 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-# Initialize Lettuce client with error handling
-try:
-    client = Letta(
-        token=os.getenv("LETTA_API_KEY")
-    )
-except Exception as e:
-    logger.error(f"Failed to initialize Lettuce client: {e}")
-    raise
+LETTA_API_KEY = os.getenv("LETTA_API_KEY")
+client = None
+
+if not LETTA_API_KEY:
+    logger.warning("LETTA_API_KEY not set; screenshot analysis will return NO by default.")
+else:
+    try:
+        client = letta_client.Letta(
+            token=LETTA_API_KEY
+        )
+    except Exception as e:
+        logger.warning(f"Failed to initialize Lettuce client: {e}")
+        client = None
 
 # In-memory caches/state
 # lesson_cache: { lesson_id: { step_order: { 'name', 'description', 'finish_criteria' } } }
@@ -105,24 +110,38 @@ OUTPUT FORMAT:
 - Do not provide explanations, reasoning, or additional text
 - Be precise: only say "YES" if the screenshot exactly matches the finish criteria"""
 
-# Initialize task completion agent with error handling
-try:
-    task_completion_agent = client.agents.create(
-        name="Task Completion Decider",
-        system=SYSTEM_PROMPT,
-        model="openai/gpt-4o",
-        embedding="openai/text-embedding-3-small",
-        tools=[],
-        include_base_tools=False
-    )
-    logger.info("Successfully created Lettuce task completion agent")
-except Exception as e:
-    logger.error(f"Failed to create Lettuce task agent: {e}")
-    raise
+task_completion_agent = None
+
+if client:
+    try:
+        task_completion_agent = client.agents.create(
+            name="Task Completion Decider",
+            system=SYSTEM_PROMPT,
+            model="openai/gpt-4o",
+            embedding="openai/text-embedding-3-small",
+            tools=[],
+            include_base_tools=False
+        )
+        logger.info("Successfully created Lettuce task completion agent")
+    except Exception as e:
+        logger.warning(f"Failed to create Lettuce task agent: {e}")
+        task_completion_agent = None
 
 
 def analyze_screenshot(base64_image: str, finish_criteria: str, lesson_id: Optional[str] = None) -> str:
     """Analyze screenshot to determine if task completion criteria are met."""
+    if not client or not task_completion_agent:
+        logger.warning("Screenshot analysis unavailable; returning NO.")
+        return "NO"
+
+    MessageCreate = getattr(letta_client, "MessageCreate", None)
+    TextContent = getattr(letta_client, "TextContent", None)
+    ImageContent = getattr(letta_client, "ImageContent", None)
+
+    if not MessageCreate or not TextContent or not ImageContent:
+        logger.warning("Letta message types unavailable; returning NO.")
+        return "NO"
+
     try:
         # Get context from database
         context = ""
