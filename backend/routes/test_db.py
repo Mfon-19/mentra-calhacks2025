@@ -7,6 +7,9 @@ test_db_bp = Blueprint("test_db", __name__)
 @test_db_bp.route("/insert-db", methods=["GET"])
 def insert_db():
     try:
+        if supabase is None:
+            return jsonify({"error": "Supabase client not configured"}), 500
+
         supabase.table("lesson").insert(
             {
                 "name": "Test Lesson",

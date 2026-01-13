@@ -284,4 +284,12 @@ if __name__ == '__main__':
     print("Starting Flask backend with WebSocket support...")
     print("Backend will be available at: http://localhost:5000")
     print("WebSocket endpoint: ws://localhost:5000/socket.io/")
-    socketio.run(app, debug=True, port=5000, host='127.0.0.1', allow_unsafe_werkzeug=True)
+    debug_mode = os.getenv("FLASK_DEBUG", "0") == "1"
+    socketio.run(
+        app,
+        debug=debug_mode,
+        use_reloader=debug_mode,
+        port=5000,
+        host='127.0.0.1',
+        allow_unsafe_werkzeug=True,
+    )

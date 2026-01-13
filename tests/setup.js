@@ -21,25 +21,32 @@ jest.mock('path', () => ({
   dirname: jest.fn(() => '/mock/dir')
 }));
 
-// Global fetch mock
-global.fetch = jest.fn(() =>
-  Promise.resolve({
-    ok: true,
-    json: () => Promise.resolve({}),
-    text: () => Promise.resolve('')
-  })
-);
+// Preserve real fetch for node-based tests that need it
+global.__realFetch = global.fetch;
+
+// Global fetch mock (skip when explicitly disabled)
+if (process.env.JEST_USE_REAL_FETCH !== 'true') {
+  global.fetch = jest.fn(() =>
+    Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({}),
+      text: () => Promise.resolve('')
+    })
+  );
+}
 
 // Mock window object for browser environment
-Object.defineProperty(window, 'electronAPI', {
-  value: {
-    triggerChildProcess: jest.fn(() => Promise.resolve({ success: true })),
-    onChildProcessOutput: jest.fn(),
-    getBackendStatus: jest.fn(() => Promise.resolve({ isRunning: true })),
-    restartBackend: jest.fn(() => Promise.resolve({ success: true }))
-  },
-  writable: true
-});
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'electronAPI', {
+    value: {
+      triggerChildProcess: jest.fn(() => Promise.resolve({ success: true })),
+      onChildProcessOutput: jest.fn(),
+      getBackendStatus: jest.fn(() => Promise.resolve({ isRunning: true })),
+      restartBackend: jest.fn(() => Promise.resolve({ success: true }))
+    },
+    writable: true
+  });
+}
 
 // Mock console methods to reduce noise in tests
 global.console = {
